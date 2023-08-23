@@ -1,0 +1,82 @@
+\documentclass[12pt]{article}
+\usepackage{booktabs}
+\usepackage[table,x11names,dvipsnames,table]{xcolor}
+\usepackage{colortbl}
+\usepackage[a4paper,hmargin={2.5cm,1.5cm},vmargin={1.5cm,2.0cm},
+        headsep=0cm,footskip=0cm,includeheadfoot]{geometry}
+
+\usepackage{tikz}
+\definecolor[named]{MilkTea}{HTML}{C5A16F}
+
+\begin{document}
+
+\pagestyle{empty}
+
+\begin{tikzpicture}[remember picture,overlay]
+    \fill[MilkTea!25!white] (current page.north east) rectangle (current page.south west);
+    \fill[white, rounded corners] ([xshift=-10mm,yshift=-15mm]current page.north east) rectangle ([xshift=15mm,yshift=17mm]current page.south west);
+    \end{tikzpicture}
+
+\vspace{-1cm}
+\begin{center}
+\Huge \textbf{VIEWCUBE} \\[0.5cm]
+\Large Rub\'en Garc\'ia-Benito \\
+IAA-CSIC \\[0.5em]
+rgb@iaa.es
+\end{center}
+
+\vspace{0.5cm}
+
+%\begin{table}
+\rowcolors{2}{RoyalBlue!20}{RoyalBlue!5}
+\centering
+\setlength{\tabcolsep}{1cm}
+\begin{tabular} {c l}
+\hline
+\rowcolor{MilkTea!25!white}
+Key & Action \\
+\hline
+s & Turn on/off spectra plot\\
+w & Open manager window \\
+Left mouse button & Select spaxels \\
+d (hold) & Delete individual selected spaxel \\
+$*$ & Clean all selected spaxels\\
+Right button & Individual/Integrated \\
+l & Set up lambda limits\\
+Y & Set up Y axis limits\\
+q & Quit program\\
+S & Save file (ASCII/FITS; manager window) \\
+k & Change redshift (in km/s) \\
+z & Observed/rest $\lambda$ (spectral viewer) \\
+e & Turn on/off error plotting (if exists) \\
+t/T &  Change filter (forward/backward) \\
+a & Center filter in wavelength range \\
+c & Remove continuum \\
+i & Change interactive fitting mode \\
+x & Open interactive fitting plot \\
+\multicolumn{2}{c}{\cellcolor{MilkTea!25!white} Colormap options (interactive)} \\
++/- & Change colormap \\
+z & Turn on/off ZSCALE colormap\\
+m & Print available colormaps \\
+i & Invert colormap \\
+0 & Print available scailings \\
+v & Choose min/max values for colormap \\
+Right mouse button & Change scale dynamically\\
+1 & Linear scale \\
+2 & Log scale \\
+3 & Sqrt scale \\
+4 & Power scale \\
+5 & Asinh scale \\
+\multicolumn{2}{c}{\cellcolor{MilkTea!25!white} PyCASSO options} \\
+n & Identify zone by ID \\
+p & Plot synthetic spectra \\
+r & Plot residual spectra \\
+u & Residual spectra units (normalized / absolute)\\
+R & Open Residual Inspector Window\\
+y & Plot PyCASSO property (A\_V, McorSD, $\cdots$) \\
+I & Plot PyCASSO Integrated Spectra \\
+\hline
+\end{tabular}
+%\end{table}
+
+\end{document}
