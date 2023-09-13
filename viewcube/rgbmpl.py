@@ -22,7 +22,7 @@
 #
 
 from numpy import array, arange, ravel, shape, where, concatenate, insert
-from numpy import zeros, repeat, delete, histogram, float, isinf, isnan, nan 
+from numpy import zeros, repeat, delete, histogram, isinf, isnan, nan 
 from numpy import clip, loadtxt, interp, trapz, take, nanmin, nanmax, linspace
 import numpy, math, fnmatch, sys, os, matplotlib
 import numpy.ma as ma

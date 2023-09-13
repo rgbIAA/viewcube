@@ -118,6 +118,49 @@ def get_min_max(nar, mask=np.nan):
 # -------------------------------------------------------------------------------------
 
 # -------------------------------------------------------------------------------------
+def image_quadrant(image, xc=None, yc=None, chunks=3., indices=False):
+    if isinstance(image, np.ndarray):
+        ny, nx = image.shape
+    else:
+        ny, nx = image
+    if isinstance(chunks, (list, tuple)):
+        fx, fy = chunks
+    else:
+        fx, fy = chunks, chunks
+
+    if xc is None:
+        dx = np.round(nx / fx, 0)
+        if dx < 1.:
+            dx = 1.
+        xc = int(np.round(nx / 2., 0) - dx / 2.)
+        xc = slice(xc, int(xc + dx))
+    if yc is None:
+        dy = np.round(ny / fy, 0)
+        if dy < 1.:
+            dy = 1.
+        yc = int(np.round(ny / 2., 0) - dy / 2.)
+        yc = slice(yc, int(yc + dy))
+
+    mask = np.zeros((ny, nx), dtype=bool)
+    mask[yc, xc] = True
+
+    if indices:
+        return yc, xc
+    else:
+        return mask
+# -------------------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------------
+def image_max_pixel(image, integer=True, **kwargs):
+    y, x = image_quadrant(image, indices=True, **kwargs)
+    yc, xc = np.unravel_index(np.nanargmax(image[y, x], axis=None), 
+                              np.shape(image[y, x]))
+    yc += y.start
+    xc += x.start
+    return yc, xc
+# -------------------------------------------------------------------------------------
+
+# -------------------------------------------------------------------------------------
 class LoadFits:
 
  def __init__(self, name, exdata=None, exflag=None, exerror=None, exerw=None, exfibc=None, exflat=None,
@@ -409,7 +452,7 @@ class LoadFits:
     self.cdelt = self.hdr.get('CD3_3') # MUSE
     self.wave = self.crval + self.cdelt*np.arange(self.nwave)
    # For WEAVE *single* RSS pointings
-   if ('CRVAL1' in list(self.hdr.keys())) and ('CD1_1' in list(self.hdr.keys())) and (self.instrument == 'WEAVE') and self.data.ndim == 2:
+   if ('CRVAL1' in list(self.hdr.keys())) and ('CD1_1' in list(self.hdr.keys())) and ('WEAVE' in self.instrument) and self.data.ndim == 2:
     self.crval = self.hdr.get('CRVAL1') 
     self.cdelt = self.hdr.get('CD1_1') 
     self.wave = self.crval + self.cdelt*np.arange(self.nwave)

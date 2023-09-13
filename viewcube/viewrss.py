@@ -2,13 +2,13 @@
 #                               VIEWRSS                                    #
 #                               PYTHON 3                                   #
 #                                                                          #
-# RGB@IAA ---> Last Change: 2023/01/30                                     #
+# RGB@IAA ---> Last Change: 2023/09/13                                     #
 ############################################################################
 #
 #
 #
 ################################ VERSION ###################################
-VERSION = '0.1.1'                                                          #
+VERSION = '0.1.2'                                                          #
 ############################################################################
 #
 '''
@@ -143,17 +143,25 @@ def readMegaraPosTable(fits, extname='FIBERS', ext=None, table=True, lkeys=None,
 
  return df
 
-def readLIFUPosTable(fits, extname='FIBTABLE', angle=None, ref_x=0.0, ref_y=0.0):
+def readLIFUPosTable(fits, extname='FIBTABLE', skycoord=True, angle=None, ref_x=0.0, ref_y=0.0):
  from astropy.coordinates import SkyCoord
  from astropy.table import Table
  from astropy import units as u
 
  t = Table.read(fits, hdu=extname)
- co  = SkyCoord(t['FIBRERA'] * u.deg, t['FIBREDEC'] * u.deg)
- idc = (t['XPOSITION'] == 0.0) & (t['YPOSITION'] == 0.0)
- ra, dec = co.spherical_offsets_to(co[idc])
- t['X'] = ra.to(u.arcsec).value
- t['Y'] = dec.to(u.arcsec).value
+ if skycoord:
+  try:
+   co  = SkyCoord(t['FIBRERA'] * u.deg, t['FIBREDEC'] * u.deg)
+  except:
+   # Some tables come with the units already set
+   co  = SkyCoord(t['FIBRERA'], t['FIBREDEC'])
+  idc = np.argmin(t['XPOSITION']**2 + t['YPOSITION']**2)
+  ra, dec = co.spherical_offsets_to(co[idc])
+  t['X'] = ra.to(u.arcsec).value
+  t['Y'] = dec.to(u.arcsec).value
+ else:
+  t['X'] = t['XPOSITION']
+  t['Y'] = t['YPOSITION']
 
  if angle is not None:
   t['X'], t['Y'] = rotatePosTable(t['X'], t['Y'], angle, ref_x=ref_x, ref_y=ref_y)
@@ -175,7 +183,7 @@ class RSSViewer:
 		iclm=True,fig_spaxel_size=(7,6),fig_spectra_size=(8,5),
 		fig_window_manager=(5,5),fp=1.2,ft='C',hex_scale=None,
                 extent=None,cfilter=False,remove_cont=False,angle=None,
-                masked=True,vflag=0,c=299792.458,**kwargs):
+                skycoord=True,masked=True,vflag=0,c=299792.458,**kwargs):
   """
   # -----------------------------------------------------------------------------
 	USO:
@@ -221,6 +229,8 @@ class RSSViewer:
         cfilter = False --> Center filter in wavelength range
         remove_cont = False --> Remove continuum from adjacent positions (right and left) 
         angle = None -> Rotation angle of the position table (only for RSS)
+        skycoord = True --> Use skycoord to compute relative distance in fibers; 
+            use X, Y position otherwise
         masked = True --> Use masked arrays for flux (flag = mask)
         vflag = 0 --> Flags with values larger than "vflag" are considered flagged
   # -----------------------------------------------------------------------------
@@ -409,12 +419,12 @@ class RSSViewer:
   #color = dat[:,0:1900].sum(axis=1)
 
 # Read Position Table
-  self.readPositionTable(extension)
+  self.readPositionTable(extension, skycoord=skycoord)
 
 # Create Figure 2 (Spectral Viewer) ---------------------------------
   self.fig2 = plt.figure(2,self.fig2_size)
   self.fig2.set_label(self.fig2_label)
-  self.fig2.canvas.set_window_title(self.fig2_label)
+  self.fig2.canvas.setWindowTitle(self.fig2_label)
   self.ax2 = self.fig2.add_subplot(111)
   self.awlmin, self.awlmax = GetLambdaLimits(self.wl,0.05,wlim=self.wlim)
   self.fmin, self.fmax = GetFluxLimits(self.flim)
@@ -426,7 +436,7 @@ class RSSViewer:
 # Create Figure 1 (Spaxel Viewer) ---------------------------------
   self.fig = plt.figure(1,self.fig1_size)
   self.fig.set_label(self.fig1_label)
-  self.fig.canvas.set_window_title(self.fig1_label)
+  self.fig.canvas.setWindowTitle(self.fig1_label)
   self.ax = self.fig.add_subplot(111)
   if self.xmin is None or self.xmax is None or self.ymin is None or self.ymax is None:
    self.xmin,self.xmax,self.ymin,self.ymax = GetSpaxelLimits(self.x,self.y,self.radius)
@@ -482,19 +492,26 @@ class RSSViewer:
    self.ymin = -6.
    self.ymax =  6.
 
- def readLIFUPosTable(self, sky=False):
-  t = readLIFUPosTable(self.name_fits)
+ def readLIFUPosTable(self, sky=False, skycoord=True):
+  t = readLIFUPosTable(self.name_fits, skycoord=skycoord)
+  hdr = pyfits.getheader(self.name_fits, ext=0)
+  mode = hdr.get('OBSMODE')
+  if isinstance(mode, str):
+   mode = mode.strip().upper()
+   if 'LIFU' in mode:
+    self.xs = 2.6 / 2.
+   else:
+    self.xs = 1.3 / 2.
   self.x  = t['X']
   self.y  = t['Y']
-  self.xs = 2.6 / 2.
   self.ft = 'C'
-  if not sky:
+  if not sky and 'LIFU' in mode:
    self.xmin = -55.
    self.xmax =  55.
    self.ymin = -55.
    self.ymax =  55.
 
- def readPositionTable(self, extension=False):
+ def readPositionTable(self, extension=False, skycoord=True):
   if not extension:
    ckfiles(self.ptable)
    with open(self.ptable,'r') as f: # Close file
@@ -510,12 +527,13 @@ class RSSViewer:
    except:
     pass
    try:
-    self.readLIFUPosTable()
+    self.readLIFUPosTable(skycoord=skycoord)
    except:
     pass
   if self.angle is not None:
    self.x, self.y = rotatePosTable(self.x, self.y, angle=self.angle)
 
+  self.readLIFUPosTable(skycoord=skycoord)
   if self.ft == 'C':
    self.radius = float(self.xs)
    self.fiber_size = 2. * self.radius
@@ -944,7 +962,7 @@ class RSSViewer:
   if not plt.fignum_exists(3):
    self.fig3 = plt.figure(3,self.winman_size)
    self.fig3.set_label(self.winman_label)
-   self.fig3.canvas.set_window_title(self.winman_label)
+   self.fig3.canvas.setWindowTitle(self.winman_label)
    # Patch Spaxel Properties
    # No podemos anyadir 'axes' antes porque no se ve, y si lo ponemos despues, los widgets No funcionan
    ps = gridspec.GridSpec(3,2,left=0.2,bottom=0.8,top=0.95,wspace=0.5,hspace=0.7,right=0.8)

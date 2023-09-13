@@ -2,20 +2,20 @@
 #                              VIEWCUBE                                    #
 #                              PYTHON 3                                    #
 #                                                                          #
-# RGB@IAA ---> Last Change: 2023/08/18                                     #
+# RGB@IAA ---> Last Change: 2023/09/13                                     #
 ############################################################################
 #
 #
 #
 ################################ VERSION ###################################
-VERSION = '0.3.1'                                                          #
+VERSION = '0.3.3'                                                          #
 ############################################################################
 #
 from matplotlib.collections import PatchCollection, PolyCollection
 from numpy import shape, arange, loadtxt, savetxt, take, hypot
 from numpy import argmin, take, interp, trapz, isinf, array
-from .utils import lsfiles, ckfiles, LoadFits, save_spec
-from .utils import convert2iraf_spec, get_min_max
+from .utils import lsfiles, ckfiles, LoadFits, image_max_pixel
+from .utils import save_spec, convert2iraf_spec, get_min_max
 from matplotlib.widgets import  RectangleSelector
 from matplotlib.patches import Circle, Rectangle
 from distutils.version import LooseVersion
@@ -155,13 +155,14 @@ def tmpName(prefix='tmp',char=8,suffix='fits'):
 # -------------------------------------------------------------------------------------
 class CubeViewer:
 
- def __init__(self, name_fits,ptable=None,fitscom=None,syncom=False,default_filter='Halpha_KPNO-NOAO',
+ def __init__(self,name_fits,ptable=None,fitscom=None,syncom=False,default_filter='Halpha_KPNO-NOAO',
         exdata=None,exhdr=0,exwave=None,exflag=None,exerror=None,specaxis=None,dfilter='filters/',
         norm='sqrt',fo=1.0,fc=1.0,mval=0.0,palpha=0.95,plw=0.1,plc='k',clw=1,cc='r',cf=False,ca=0.8,slw=2,
         sf=False,sa=0.9,cspec='#1f77b4',lspec=1,ccom='#ff7f0e',lcom=1,cflag='r',lflag=1,colorbar=True,
         fits=False,txt=True,integrated=True,individual=False,wlim=None,flim=None,iclm=True,fp=1.2,
         fig_spaxel_size=(7.1,6),fig_spectra_size=(8,5),fig_window_manager=(5,5),c=299792.458,
-        cfilter=False,remove_cont=False,masked=True,vflag=0,**kwargs):
+        cfilter=False,remove_cont=False,masked=True,vflag=0,dsoni=None,ref_mode='crpix',
+        soni_start=False,**kwargs):
   """
   # -----------------------------------------------------------------------------
 	USE:
@@ -211,6 +212,9 @@ class CubeViewer:
         remove_cont = False --> Remove continuum from adjacent positions (right and left) 
         masked = True --> Use masked arrays for flux (flag = mask)
         vflag = 0 --> Flags with values larger than "vflag" are considered flagged
+        dsoni -> Directory for sonification module and data
+        ref_mode -> Mode for choosing reference pixel: 'crpix' or 'max'
+        soni_start -> Activate sonification mode (import libraries and check database)
   # -----------------------------------------------------------------------------
   """
 
@@ -290,6 +294,11 @@ class CubeViewer:
   self.intspec = None
   self.eintspec = None
   self.view_pintspec = False
+# Sonification 
+  self.dsoni = dsoni
+  self.soni_start = soni_start
+  self.soni_mode = False
+  self.sc = None
 # Constant
   self.c = c
 # Color Buttons
@@ -420,10 +429,8 @@ class CubeViewer:
    self.fy = len(str(self.yy)) # Number of digits of the number of pixels in Y axis
 #  Spatial resolution
    self.sr = 1.0 if (self.cdelt1 == 0 or self.cdelt2 == 0) else float(self.cdelt1)
-   self.ext = [-self.crpix1*self.sr,(self.xx-self.crpix1)*self.sr,   
-   		-self.crpix2*self.sr,(self.yy-self.crpix2)*self.sr]
-   #self.ext = [-self.ext[0],-self.ext[1],self.ext[2],self.ext[3]]
-   #self.ext = [0,self.xx,0,self.yy]
+# Choose reference pixel and ext
+   self.get_ref_pix(ref_mode)
 # Lambda
   #self.wl = crval + arange(self.nl)*cdelt
   self.orig_wl      = self.fobj.wave
@@ -553,13 +560,25 @@ class CubeViewer:
   plt.show()
 
  def res2pix(self,x,y):
-  return int((x/self.sr)+self.crpix1), int((y/self.sr)+self.crpix2)
+  return int((x/self.sr)+self.x_ref), int((y/self.sr)+self.y_ref)
 
  def pix2res(self,x,y):
-  return (x-self.crpix1)*self.sr, (y-self.crpix2)*self.sr
+  return (x-self.x_ref)*self.sr, (y-self.y_ref)*self.sr
 
  def vredshift(self,cz):
   return self.wl/(1.0+(cz/self.c))
+
+ def get_ref_pix(self, mode='max', **kwargs):
+  if mode.lower() == 'max':
+   image = np.nanmedian(self.dat, axis=0)
+   self.y_ref, self.x_ref = image_max_pixel(image, **kwargs)
+  else:
+   self.y_ref = self.crpix2
+   self.x_ref = self.crpix1
+  self.ext = [-self.x_ref*self.sr,(self.xx-self.x_ref)*self.sr,   
+              -self.y_ref*self.sr,(self.yy-self.y_ref)*self.sr]
+  #self.ext = [-self.ext[0],-self.ext[1],self.ext[2],self.ext[3]]
+  #self.ext = [0,self.xx,0,self.yy]
 
  def onselect(self,eclick, erelease):
   #'eclick and erelease are matplotlib events at press and release'
@@ -636,6 +655,16 @@ class CubeViewer:
    self.fig2.canvas.draw()
   if event.key == 's': 
    self.mode = not self.mode
+  # Sonification
+  if event.key == 'h':
+   if not self.soni_start:
+    self.soni_start = True
+    self.Sonification()
+   self.soni_mode = not self.soni_mode
+   if self.sc is None:
+    self.soni_mode = False
+   if not self.soni_mode and self.sc is not None and self.sc.cs is not None:
+    self.sc.stop_sound()
   # Save selected Spectra
   if len(self.list) > 0 and event.key == 'S':
    self.SaveFile()
@@ -648,6 +677,8 @@ class CubeViewer:
   if event.key == 'I' and self.fobj.K is not None:
    self.view_pintspec = not self.view_pintspec
   if event.key == 'q':
+   if self.sc is not None and self.sc.cs is not None:
+    self.sc.close_sound()
    sys.exit()
 
  def SaveFile(self):
@@ -951,6 +982,12 @@ class CubeViewer:
     if self.zones is not None and self.view_pintspec and (self.zones[iy, ix] <= 0 or isinstance(self.zones[iy, ix], np.ma.core.MaskedConstant)):
      self.PlotPycassoIntSpec()
      self.fig2.canvas.draw()
+   # Sonification ('h') ----------------------------------
+   if self.soni_mode and self.sc is not None and self.sc.cs is not None:
+    if (0 <= ix < self.xx) and (0 <= iy < self.yy) and not isinstance(self.p._A[iy,ix], np.ma.core.MaskedConstant):
+      self.sc.sonify(self.iy, self.ix, self.spec)
+    else:
+     self.sc.stop_sound()
    # View selected Spectra  -------------------------------
    # Right click = 3
    if len(self.list) > 0 and event.button == 3:# and event.key == 'shift':
@@ -965,6 +1002,8 @@ class CubeViewer:
      self.eintspec = np.sqrt(np.ma.array([self.err[:,y,x]**2 for x,y in self.list]).sum(0))
      self.ax2.plot(self.wl,self.intspec,label=self.sint,picker=True)
     self.fig2.canvas.draw()
+  if not event.inaxes and self.soni_mode and self.sc is not None and self.sc.cs is not None:
+   self.sc.stop_sound()
 
  def getSpec(self, ix, iy):
   if ix is None or iy is None:
@@ -1407,3 +1446,11 @@ class CubeViewer:
      self.fig3.canvas.draw()
    self.fig3.canvas.mpl_connect('button_press_event', press)
    plt.show()
+
+ def Sonification(self):
+  if self.dsoni is None:
+   return
+  sys.path.append(self.dsoni)
+  from .sonicube import SoniCube
+  self.sc = SoniCube(self.name_fits, data=self.dat, base_dir=self.dsoni, ref=(self.y_ref, self.x_ref))
+  

@@ -34,6 +34,9 @@ defaultParams = [
  ['exerror',            None,           'ERROR Extension'],
  ['specaxis',           None,           'Spectral Dimension'],
  ['dfilter',            None,           'Filters directory'],
+ ['dsoni',              None,           'Sonification directory'],
+ ['ref_mode',           'crpix',        'Reference (central) pixel [crpix | max]'],
+ ['soni_start',         False,          'Activate sonification mode (import libraries and check database)'],
  ['norm',               'sqrt',         'Normalization for colorbar'],
  ['default_filter',     None,           'Default filter'],
  #['fcom',               1.0,            'Multiplicative factor'],
@@ -70,6 +73,7 @@ defaultParams = [
  ['cfilter',            False,          'Center filter in wavelength range'],
  ['remove_cont',        False,          'Remove continuum'],
  ['angle',              None,           'Angle for rotating the position table (only RSS)'],
+ ['skycoord',           True,           'Use skycoord to compute fibre distance; x,y otherwise'],
  ['masked',             True,           'Use masked arrays for flux (flag = mask)'],
  ['vflag',              0,              'Flags with values larger than "vflag" are considered flagged'],
  ]

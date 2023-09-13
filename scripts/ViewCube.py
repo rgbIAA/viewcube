@@ -36,9 +36,11 @@ parser.add_argument('-a',type=float,help="Angle to rotate the position table (on
 parser.add_argument('-b',type=str,help="Matplotlib backend. Use 'TkAgg' if using PyRAF for interactive fitting. Available backends: %s" % slist_backends,default=matplotlib.rcParams['backend'])
 parser.add_argument('-c',type=str,help="FITS file for comparison")
 parser.add_argument('-e',action='store_true',help="Position table is in RSS and -p indicates the extension (string or int)")
-parser.add_argument('-i',action='store_true',help="Conversion from IVAR to error")
+parser.add_argument('-f',action='store_false',help="Do NOT apply sensitivity curve (if HDU is available)")
 parser.add_argument('-fo',type=str,default="1.0",help="Multiplicative factor for original file")
 parser.add_argument('-fc',type=str,default="1.0",help="Multiplicative factor for comparison file")
+parser.add_argument('-i',action='store_true',help="Conversion from IVAR to error")
+parser.add_argument('-k',action='store_false',help="Use X,Y instead of sky coords for computing fiber distance")
 parser.add_argument('-m',action='store_false',help="Do NOT use masked arrays for flagged values")
 parser.add_argument('-p',type=str,help="External position table for RSS Viewer")
 parser.add_argument('-s',type=int,help="Spectral dimension")
@@ -84,6 +86,8 @@ vc.defaultDictParams['exerror'] = args.error
 vc.defaultDictParams['exflag'] = args.flag
 vc.defaultDictParams['exhdr'] = args.header
 vc.defaultDictParams['masked'] = args.m
+vc.defaultDictParams['skycoord'] = args.k
+vc.defaultDictParams['sensf'] = args.f
 
 if args.y is not None:
  import matplotlib.pyplot as plt
@@ -92,15 +96,15 @@ if args.y is not None:
 
 if args.p is None:
  from viewcube.cubeviewer import CubeViewer
- lkey = ['angle']
+ lkey = ['angle', 'skycoord']
  for key in lkey:
   if key in vc.defaultDictParams:
-   del vc.defaultDictParams['angle']
+   del vc.defaultDictParams[key]
  CV = CubeViewer(args.name[0],fitscom=args.c,fc=fc,fo=fo,ivar=args.i,**vc.defaultDictParams)
 
 else:
  from viewcube.viewrss import RSSViewer
- lkey = ['exdata','exwave','exhdr','specaxis','exerror','exflag','c','mval','cflag','lflag','lcom','ccom','lspec','cspec']
+ lkey = ['exdata','exwave','exhdr','specaxis','exerror','exflag','c','mval','cflag','lflag','lcom','ccom','lspec','cspec','dsoni','ref_mode','soni_start']
  for key in lkey:
   if key in vc.defaultDictParams:
    del vc.defaultDictParams[key]
