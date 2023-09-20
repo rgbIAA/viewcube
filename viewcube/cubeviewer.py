@@ -937,7 +937,7 @@ class CubeViewer:
    self.fig.canvas.draw()
    self.fig2.canvas.draw()
 
- def SpectraViewer(self,event):
+ def SpectraViewer(self, event):
   tb = plt.get_current_fig_manager().toolbar
   #plt.get_current_fig_manager().toolbar.set_message('Pepep')
   if event.inaxes and tb.mode == '' and not self.RS.active:
@@ -1452,5 +1452,5 @@ class CubeViewer:
    return
   sys.path.append(self.dsoni)
   from .sonicube import SoniCube
-  self.sc = SoniCube(self.name_fits, data=self.dat, base_dir=self.dsoni, ref=(self.y_ref, self.x_ref))
+  self.sc = SoniCube(self.fig, file=self.name_fits, data=self.dat, base_dir=self.dsoni, ref=(self.y_ref, self.x_ref))
   

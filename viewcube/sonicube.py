@@ -24,15 +24,30 @@ import os
 class SoniCube(object):
     '''Califa survey Sonification'''
 
-    def __init__(self, file=None, base_dir=None, verbose=False, port=9970,
-                 ref=None, data=None, **kwargs):
+    def __init__(self, fig, file=None, base_dir=None, verbose=False, port=9970,
+                 ref=None, data=None, flux_sensitive=True, **kwargs):
+
+        self.verbose = verbose
+        self.flux_sensitive = flux_sensitive
 
         self.is_cube = False
-        self.verbose = verbose
+        self.autoencoder = None
 
-        self.set_sound(base_dir=base_dir, port=port)
+        self.base_dir = os.path.dirname(__file__) if base_dir is None else base_dir
+
+        self.set_interactive(fig)
+        self.set_sound(port=port)
         self.open_file(file, ref=ref, data=data)
         self.start_sound()
+
+
+    def set_interactive(self, fig):
+        fig.canvas.mpl_connect('key_press_event', self.PressKey)
+
+
+    def PressKey(self, event):
+        if event.key == 'H':
+            self.flux_sensitive = not self.flux_sensitive
 
 
     def open_file(self, file=None, ref=None, data=None):
@@ -43,16 +58,17 @@ class SoniCube(object):
             return
 
         self.open_autoencoder()
+        self.open_weights()
         self.preprocessing(file, ref=ref, data=data)
 
 
-    def set_sound(self, port=9970, base_dir=None):
+    def set_sound(self, port=9970):
         self.port = port # OSC port
         self.cs = None
         self.pt = None
 
-        self.base_dir = os.path.dirname(__file__) if base_dir is None else base_dir
-        self.auto_path = os.path.join(self.base_dir, 'data/')
+        self.auto_path = os.path.join(self.base_dir, 'autoencoder/')
+        self.weights_path = os.path.join(self.base_dir, 'data/')
 
         self.hrtf_left = os.path.join(self.base_dir, 'binaural', 'hrtf-48000-left.dat')
         self.hrtf_right = os.path.join(self.base_dir, 'binaural', 'hrtf-48000-right.dat')
@@ -94,8 +110,14 @@ class SoniCube(object):
             return
 
         self.bfile = os.path.basename(file)
+        self.root = self.bfile.split('.rscube')[0]
 
-        full_path = os.path.join(self.auto_path, self.bfile, '%s_Reference.npy' % self.bfile)
+        if self.bfile.endswith('.gz'):
+            self.name = self.bfile
+        else:
+            self.name = '%s.gz' % self.bfile
+
+        full_path = os.path.join(self.weights_path, self.name, '%s_Reference.npy' % self.name)
 
         if not os.path.exists(full_path):
             print (full_path)
@@ -112,6 +134,27 @@ class SoniCube(object):
         else:
             print("IMPORTANT ADVICE: Some spectra could produce high sound pressure levels. Perform a first scan of the cube to adapt the volume of your headphones.")
             self.set_labels()
+            self.check_mask()
+
+
+    def check_mask(self):
+        self.mask_path = os.path.join(self.base_dir, 'data/', self.name, '%s.mask.fits' % self.root)
+        if os.path.exists(self.mask_path):
+            mask = fits.getdata(self.mask_path)
+            self.mask = np.where(mask > 0, True, False)
+        else:
+            self.mask = None
+
+
+    def apply_mask(self, data):
+        if self.mask is not None:
+            try:
+                data[:, self.mask] = 0.0
+            except:
+                print ('>>> Mask found NOT compatible with the datacube!')
+                print (self.mask_path)
+
+        return data
 
 
     def open_autoencoder(self):
@@ -119,11 +162,18 @@ class SoniCube(object):
             print ('>>> No encoder available!')
             return
 
-        # Autoencoder initialization
-        autoencoder_path = os.path.join(self.auto_path, self.bfile, '%s_Autoencoder.tf' % self.bfile)
-        weights_path = os.path.join(self.auto_path, self.bfile, '%s_Weights' % self.bfile)
-        self.autoencoder = tf.keras.models.load_model(autoencoder_path)     # Importing the model
-        self.weights = self.autoencoder.load_weights(weights_path)          # Importing the weights
+        # Autoencoder initialization: Importing the model
+        self.autoencoder = tf.keras.models.load_model(self.auto_path)     
+
+
+    def open_weights(self):
+        if not self.is_cube or self.autoencoder is None:
+            print ('>>> No encoder available!')
+            return
+
+        # Importing the weights
+        weights_path = os.path.join(self.weights_path, self.name, '%s_Weights' % self.name)
+        self.weights = self.autoencoder.load_weights(weights_path)          
 
 
     def md5(self, fname):
@@ -146,6 +196,9 @@ class SoniCube(object):
 
         # extracting data dimensions
         self.spectrum_dim, self.y_tot, self.x_tot = data.shape
+
+        # Apply mask
+        data = self.apply_mask(data)
 
         median_set = np.nanmedian(data, axis=0)
         self.max_median = np.nanmax(median_set)
@@ -242,7 +295,12 @@ class SoniCube(object):
                 median_flux = round(np.ma.median(spectrum, axis=0), 5)
 
                 if (median_flux != 0):
-                    median_norm = 1 + ((median_flux - self.min_median) / (self.max_median - self.min_median))*9 # MAX-MIN Normalizing fluxes between 1&10
+                    if self.flux_sensitive:
+                        # MAX-MIN Normalizing fluxes between 1 & 10
+                        norm = (median_flux - self.min_median) / (self.max_median - self.min_median)
+                        median_norm = 1 + norm * 9 
+                    else:
+                        median_norm = 8 # Not too loud
                 else:
                     median_norm = 1
                 log_norm_flux = round(np.log(median_norm), 5)
