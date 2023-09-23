@@ -538,7 +538,8 @@ class CubeViewer:
   self.fig2.canvas.mpl_connect('button_press_event', self.PassBandPress)
   self.fig2.canvas.mpl_connect('motion_notify_event', self.PassBandMove)
   self.fig2.canvas.mpl_connect('button_release_event', self.PassBandRelease)
-  self.RS = RectangleSelector(self.ax, self.onselect, drawtype='box',button=1)
+  # Argument drawtype='box in RectableSelector is deprecated in 3.5.0 as the only behaviour is box
+  self.RS = RectangleSelector(self.ax, self.onselect, button=1)
   self.fig.canvas.mpl_connect('key_press_event', self.toggle_selector)
   self.fig.canvas.mpl_connect('key_press_event', self.ChangeSpaxelViewer)
   self.fig2.canvas.mpl_connect('key_press_event', self.Redshift)
