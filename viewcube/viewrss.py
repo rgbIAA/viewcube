@@ -2,7 +2,7 @@
 #                               VIEWRSS                                    #
 #                               PYTHON 3                                   #
 #                                                                          #
-# RGB@IAA ---> Last Change: 2023/09/13                                     #
+# RGB@IAA ---> Last Change: 2023/09/24                                     #
 ############################################################################
 #
 #
@@ -424,7 +424,7 @@ class RSSViewer:
 # Create Figure 2 (Spectral Viewer) ---------------------------------
   self.fig2 = plt.figure(2,self.fig2_size)
   self.fig2.set_label(self.fig2_label)
-  self.fig2.canvas.setWindowTitle(self.fig2_label)
+  self.setWindowTitle(self.fig2, self.fig2_label)
   self.ax2 = self.fig2.add_subplot(111)
   self.awlmin, self.awlmax = GetLambdaLimits(self.wl,0.05,wlim=self.wlim)
   self.fmin, self.fmax = GetFluxLimits(self.flim)
@@ -436,7 +436,7 @@ class RSSViewer:
 # Create Figure 1 (Spaxel Viewer) ---------------------------------
   self.fig = plt.figure(1,self.fig1_size)
   self.fig.set_label(self.fig1_label)
-  self.fig.canvas.setWindowTitle(self.fig1_label)
+  self.setWindowTitle(self.fig, self.fig1_label)
   self.ax = self.fig.add_subplot(111)
   if self.xmin is None or self.xmax is None or self.ymin is None or self.ymax is None:
    self.xmin,self.xmax,self.ymin,self.ymax = GetSpaxelLimits(self.x,self.y,self.radius)
@@ -569,6 +569,16 @@ class RSSViewer:
    self.xyLimits()
   if event.key == 'q':
    sys.exit()
+
+ def setWindowTitle(self, fig, label):
+  #self.backend = matplotlib.get_backend()
+  try:
+   fig.canvas.setWindowTitle(label)
+  except:
+   try:
+    fig.canvas.set_window_title(label)
+   except:
+    pass
 
  def SaveFile(self):
   print('***** Actual Save File Options for "' + self.name_fits + '" *****')
@@ -962,7 +972,7 @@ class RSSViewer:
   if not plt.fignum_exists(3):
    self.fig3 = plt.figure(3,self.winman_size)
    self.fig3.set_label(self.winman_label)
-   self.fig3.canvas.setWindowTitle(self.winman_label)
+   self.setWindowTitle(self.fig3, self.winman_label)
    # Patch Spaxel Properties
    # No podemos anyadir 'axes' antes porque no se ve, y si lo ponemos despues, los widgets No funcionan
    ps = gridspec.GridSpec(3,2,left=0.2,bottom=0.8,top=0.95,wspace=0.5,hspace=0.7,right=0.8)

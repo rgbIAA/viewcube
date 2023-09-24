@@ -2,7 +2,7 @@
 #                              VIEWCUBE                                    #
 #                              PYTHON 3                                    #
 #                                                                          #
-# RGB@IAA ---> Last Change: 2023/09/13                                     #
+# RGB@IAA ---> Last Change: 2023/09/24                                     #
 ############################################################################
 #
 #
@@ -485,7 +485,7 @@ class CubeViewer:
 # Create Figure 2 (Spectral Viewer) ---------------------------------
   self.fig2 = plt.figure(2,self.fig2_size)
   self.fig2.set_label(self.fig2_label)
-  self.fig2.canvas.setWindowTitle(self.fig2_label)
+  self.setWindowTitle(self.fig2, self.fig2_label)
   self.ax2 = self.fig2.add_subplot(111)
   self.awlmin, self.awlmax = GetLambdaLimits((self.wl, self.wl2), 0.05, wlim=self.wlim)
   self.fmin, self.fmax = GetFluxLimits(self.flim)
@@ -498,7 +498,7 @@ class CubeViewer:
   #self.exts = [self.ext[0]-0.5,self.ext[1]+0.5,self.ext[2]-0.5,self.ext[3]+0.5]
   self.fig = plt.figure(1,self.fig1_size)
   self.fig.set_label(self.fig1_label)
-  self.fig.canvas.setWindowTitle(self.fig1_label)
+  self.setWindowTitle(self.fig, self.fig1_label)
   self.ax = self.fig.add_subplot(111)
   self.p = self.ax.imshow(self.color,alpha=self.palpha,extent=self.ext,
 		norm=rnorm(self.norm),interpolation='nearest',aspect='auto',origin='lower')
@@ -681,6 +681,16 @@ class CubeViewer:
    if self.sc is not None and self.sc.cs is not None:
     self.sc.close_sound()
    sys.exit()
+
+ def setWindowTitle(self, fig, label):
+  #self.backend = matplotlib.get_backend()
+  try:
+   fig.canvas.setWindowTitle(label)
+  except:
+   try:
+    fig.canvas.set_window_title(label)
+   except:
+    pass
 
  def SaveFile(self):
   print('***** Actual Save File Options for "' + self.name_fits + '" *****')
@@ -1221,7 +1231,7 @@ class CubeViewer:
   import matplotlib.gridspec as gridspec
   self.fig4 = plt.figure(4,(9,7))
   self.fig4.set_label('2D Residual Map')
-  self.fig4.canvas.setWindowTitle('2D Residual Map')
+  self.setWindowTitle(self.fig4, '2D Residual Map')
   self.ax4 = self.fig4.add_axes([0.09,0.30,0.81,0.68])
   awlmin, awlmax = self.wl[0], self.wl[-1]
   pr = self.ax4.imshow(self.K.zres.T,interpolation='nearest',extent=[awlmin,awlmax,0.5,self.K.zres.shape[1]+0.5],
@@ -1344,7 +1354,7 @@ class CubeViewer:
   if not plt.fignum_exists(3):
    self.fig3 = plt.figure(3,self.winman_size)
    self.fig3.set_label(self.winman_label)
-   self.fig3.canvas.setWindowTitle(self.winman_label)
+   self.setWindowTitle(self.fig3, self.winman_label)
    plt.get_current_fig_manager().toolbar.set_message=lambda x: None
    # Patch Spaxel Properties
    # No podemos anyadir 'axes' antes porque no se ve, y si lo ponemos despues, los widgets No funcionan
