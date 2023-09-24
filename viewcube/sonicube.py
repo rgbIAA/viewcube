@@ -46,7 +46,7 @@ class SoniCube(object):
 
 
     def PressKey(self, event):
-        if event.key == 'H':
+        if event.key == 'j':
             self.flux_sensitive = not self.flux_sensitive
 
 
