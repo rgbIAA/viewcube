@@ -533,7 +533,6 @@ class RSSViewer:
   if self.angle is not None:
    self.x, self.y = rotatePosTable(self.x, self.y, angle=self.angle)
 
-  self.readLIFUPosTable(skycoord=skycoord)
   if self.ft == 'C':
    self.radius = float(self.xs)
    self.fiber_size = 2. * self.radius
