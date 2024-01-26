@@ -86,7 +86,7 @@ class SoniCube(object):
         self.cs.start()
 
         # Sends the hrtf paths to CSound
-        self.cs.setStringChannel("hrtf_L", self.hrtf_left) 
+        self.cs.setStringChannel("hrtf_L", self.hrtf_left)
         self.cs.setStringChannel("hrtf_R", self.hrtf_right)
 
 
@@ -106,16 +106,17 @@ class SoniCube(object):
 
     def check_datacube(self, file):
         if not os.path.exists(file):
-            print ('>>> File does NOT exists!! [%s]' % file)
+            print ('>>> File does NOT exist!! [%s]' % file)
             return
 
         self.bfile = os.path.basename(file)
         self.root = self.bfile.split('.rscube')[0]
 
         if self.bfile.endswith('.gz'):
-            self.name = self.bfile
+            print ('>>> Please, use the uncompressed .fits file cube.')
+            return
         else:
-            self.name = '%s.gz' % self.bfile
+            self.name = self.bfile
 
         full_path = os.path.join(self.weights_path, self.name, '%s_Reference.npy' % self.name)
 
@@ -163,7 +164,7 @@ class SoniCube(object):
             return
 
         # Autoencoder initialization: Importing the model
-        self.autoencoder = tf.keras.models.load_model(self.auto_path)     
+        self.autoencoder = tf.keras.models.load_model(self.auto_path)
 
 
     def open_weights(self):
@@ -173,7 +174,7 @@ class SoniCube(object):
 
         # Importing the weights
         weights_path = os.path.join(self.weights_path, self.name, '%s_Weights' % self.name)
-        self.weights = self.autoencoder.load_weights(weights_path)          
+        self.weights = self.autoencoder.load_weights(weights_path)
 
 
     def md5(self, fname):
@@ -298,7 +299,7 @@ class SoniCube(object):
                     if self.flux_sensitive:
                         # MAX-MIN Normalizing fluxes between 1 & 10
                         norm = (median_flux - self.min_median) / (self.max_median - self.min_median)
-                        median_norm = 1 + norm * 9 
+                        median_norm = 1 + norm * 9
                     else:
                         median_norm = 8 # Not too loud
                 else:
