@@ -2,13 +2,13 @@
 #                              VIEWCUBE                                    #
 #                              PYTHON 3                                    #
 #                                                                          #
-# RGB@IAA ---> Last Change: 2023/09/24                                     #
+# RGB@IAA ---> Last Change: 2024/02/21                                     #
 ############################################################################
 #
 #
 #
 ################################ VERSION ###################################
-VERSION = '0.3.3'                                                          #
+VERSION = '0.3.4'                                                          #
 ############################################################################
 #
 from matplotlib.collections import PatchCollection, PolyCollection
@@ -374,10 +374,13 @@ class CubeViewer:
   #min, max = self.dat.min(), self.dat.max()
   self.fobj2 = None
   self.wl2 = None
+  self.err2 = None
   if self.fitscom is not None:
    self.fobj2 = LoadFits(self.fitscom,exdata=exdata,exhdr=exhdr,exwave=exwave,exflag=exflag,exerror=exerror,specaxis=specaxis,**kwargs)
    self.wl2  = self.fobj2.wave
    self.dat2 = self.fc*self.fobj2.data
+   if self.fobj2.error is not None:
+    self.err2 = self.fc*self.fobj2.error 
   if self.syncom and self.syn is not None:
    self.wl2  = self.fobj.wave
    self.dat2 = self.fobj.syn * self.fc
@@ -819,7 +822,7 @@ class CubeViewer:
      self.fig2.canvas.draw()
 
  def ErrorSpec(self,event):
-  if event.key == 'e':
+  if event.key == 'e' and not ((self.spec_mode % 3) == 0 or (self.spec_mode % 3) == 1):
    self.errcom = ~self.errcom 
    if self.errcom and self.err is None:
     self.errcom = False
@@ -827,6 +830,8 @@ class CubeViewer:
    if self.errcom and self.err is not None:
     if self.ix is not None and self.iy is not None:
      self.ax2.errorbar(self.wl,self.dat[:,self.iy,self.ix],yerr=self.err[:,self.iy,self.ix],fmt="none",ecolor='grey')
+     if self.fitscom is not None and self.err2 is not None:
+      self.ax2.errorbar(self.wl2,self.dat2[:,self.iy,self.ix],yerr=self.err2[:,self.iy,self.ix],fmt="none",ecolor='grey')
     self.fig2.canvas.draw()
    if not self.errcom and self.err is not None:
     self.errcom = False
@@ -1007,11 +1012,18 @@ class CubeViewer:
     if event.canvas.figure.get_label() == self.fig2_label: self.spec_mode += 1
     self.ax2.cla()
     if (self.spec_mode % 3) == 0 or (self.spec_mode % 3) == 1:
-     [self.ax2.plot(self.wl,self.dat[:,y,x],label=str(x)+','+str(y),picker=True) for x,y in self.list]
+     for x,y in self.list:
+      p = self.ax2.plot(self.wl,self.dat[:,y,x],label=str(x)+','+str(y),picker=True)
+      if self.fitscom is not None:
+       self.ax2.plot(self.wl2,self.dat2[:,y,x],label=str(x)+','+str(y),picker=True,c=p[0].get_color(),alpha=0.7)
     if (self.spec_mode % 3) == 1 or (self.spec_mode % 3) == 2:
      self.intspec = np.ma.array([self.dat[:,y,x] for x,y in self.list]).sum(0)
      self.eintspec = np.sqrt(np.ma.array([self.err[:,y,x]**2 for x,y in self.list]).sum(0))
-     self.ax2.plot(self.wl,self.intspec,label=self.sint,picker=True)
+     p = self.ax2.plot(self.wl,self.intspec,label=self.sint,picker=True)
+     if self.fitscom is not None:
+      intspec = np.ma.array([self.dat2[:,y,x] for x,y in self.list]).sum(0)
+      self.ax2.plot(self.wl2,intspec,label=self.sint,picker=True,c=p[0].get_color(),alpha=0.7)
+
     self.fig2.canvas.draw()
   if not event.inaxes and self.soni_mode and self.sc is not None and self.sc.cs is not None:
    self.sc.stop_sound()
@@ -1040,8 +1052,12 @@ class CubeViewer:
   if self.fitscom is not None and not self.specres:
    if self.dat2.ndim == 3:
     self.ax2.plot(self.wl2,self.dat2[:,self.iy,self.ix],c=self.ccom,lw=self.lcom,label=self.fitscom)
+    if self.errcom and self.err2 is not None:
+     self.ax2.errorbar(self.wl2,self.dat2[:,self.iy,self.ix],yerr=self.err2[:,self.iy,self.ix],fmt="none",ecolor='grey')
    if self.dat2.ndim == 1:
     self.ax2.plot(self.wl2,self.dat2,c=self.ccom,lw=self.lcom,label=self.fitscom)
+    if self.errcom and self.err2 is not None:
+     self.ax2.errorbar(self.wl2,self.dat2,yerr=self.err2,fmt="none",ecolor='grey')
   if self.errcom and self.espec is not None:
    self.ax2.errorbar(self.wl,self.spec,yerr=self.espec,fmt="none",ecolor='grey')
   if self.perr is not None and not self.specres:
