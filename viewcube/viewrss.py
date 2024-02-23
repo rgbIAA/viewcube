@@ -2,13 +2,13 @@
 #                               VIEWRSS                                    #
 #                               PYTHON 3                                   #
 #                                                                          #
-# RGB@IAA ---> Last Change: 2023/09/24                                     #
+# RGB@IAA ---> Last Change: 2024/02/23                                     #
 ############################################################################
 #
 #
 #
 ################################ VERSION ###################################
-VERSION = '0.1.2'                                                          #
+VERSION = '0.1.3'                                                          #
 ############################################################################
 #
 '''
@@ -19,6 +19,7 @@ from .cubeviewer import GetSpaxelLimits, GetLambdaLimits, GetIdFilter, GetFluxLi
 from matplotlib.collections import PatchCollection, PolyCollection
 from matplotlib.patches import Circle, Rectangle, Polygon
 from matplotlib.widgets import  RectangleSelector
+from astropy.coordinates import SkyCoord
 import matplotlib.transforms as mtrans
 from .rgbmpl import rnorm, IntColorMap
 import matplotlib, fnmatch, sys, os
@@ -27,6 +28,8 @@ import matplotlib.cbook as cbook
 import astropy.io.fits as pyfits
 from matplotlib import rcParams
 import matplotlib.pyplot as plt
+from astropy.table import Table
+from astropy import units as u
 import numpy as np
 import argparse
 import math
@@ -144,9 +147,6 @@ def readMegaraPosTable(fits, extname='FIBERS', ext=None, table=True, lkeys=None,
  return df
 
 def readLIFUPosTable(fits, extname='FIBTABLE', skycoord=True, angle=None, ref_x=0.0, ref_y=0.0):
- from astropy.coordinates import SkyCoord
- from astropy.table import Table
- from astropy import units as u
 
  t = Table.read(fits, hdu=extname)
  if skycoord:
@@ -156,6 +156,7 @@ def readLIFUPosTable(fits, extname='FIBTABLE', skycoord=True, angle=None, ref_x=
    # Some tables come with the units already set
    co  = SkyCoord(t['FIBRERA'], t['FIBREDEC'])
   idc = np.argmin(t['XPOSITION']**2 + t['YPOSITION']**2)
+  ra, dec = co.ra, co.dec
   ra, dec = co.spherical_offsets_to(co[idc])
   t['X'] = ra.to(u.arcsec).value
   t['Y'] = dec.to(u.arcsec).value
@@ -380,6 +381,7 @@ class RSSViewer:
    self.fobj2 = LoadFits(self.fitscom, flip2disp=False, **kwargs)
    self.wl2  = self.fobj2.wave
    self.dat2 = self.fc * self.fobj2.data
+   self.err2 = self.fc * self.fobj2.error if self.fobj2.error is not None else None
 
 # Lambda
   if naxes == 2:
@@ -412,8 +414,7 @@ class RSSViewer:
   if self.list_filters is not None:
    self.ifil = GetIdFilter(self.list_filters,self.default_filter,self.dfilter)
    self.nfil = len(self.list_filters)
-  self.color, self.fff = self.IntFilter(self.ifil,self.list_filters,self.wl,self.dat,True,False,
-                         self.dfilter,center=self.cfilter,remove_cont=self.remove_cont)
+  self.set_fff(verb=False)
   self.gdl = 0 # Global delta position filter
   self.dl  = None
   #color = dat[:,0:1900].sum(axis=1)
@@ -426,7 +427,7 @@ class RSSViewer:
   self.fig2.set_label(self.fig2_label)
   self.setWindowTitle(self.fig2, self.fig2_label)
   self.ax2 = self.fig2.add_subplot(111)
-  self.awlmin, self.awlmax = GetLambdaLimits(self.wl,0.05,wlim=self.wlim)
+  self.awlmin, self.awlmax = GetLambdaLimits((self.wl, self.wl2), 0.05, wlim=self.wlim)
   self.fmin, self.fmax = GetFluxLimits(self.flim)
   self.ax2.set_xlim((self.awlmin,self.awlmax))
   self.ax2.set_ylim((self.fmin,self.fmax))
@@ -505,11 +506,16 @@ class RSSViewer:
   self.x  = t['X']
   self.y  = t['Y']
   self.ft = 'C'
+  if not skycoord:
+   # Hard coded, by eye, check!
+   self.xs = 0.06
   if not sky and 'LIFU' in mode:
-   self.xmin = -55.
-   self.xmax =  55.
-   self.ymin = -55.
-   self.ymax =  55.
+   ids = t['TARGCLASS'] != 'SKY'
+   d = abs(self.x[ids].max() - self.x[ids].min()) / 10.
+   self.xmin = self.x[ids].min() - d
+   self.xmax = self.x[ids].max() + d
+   self.ymin = self.y[ids].min() - d
+   self.ymax = self.y[ids].max() + d
 
  def readPositionTable(self, extension=False, skycoord=True):
   if not extension:
@@ -627,9 +633,9 @@ class RSSViewer:
   print('Input example:  4000, None')
   lm = input('Enter lambda limits (Enter to abort): ')
   if len(lm) == 0: 
-   self.awlmin, self.awlmax = GetLambdaLimits(self.wl,0.05,wlim=self.wlim)
+   self.awlmin, self.awlmax = GetLambdaLimits((self.wl, self.wl2), 0.05, wlim=self.wlim)
   else:
-   self.awlmin, self.awlmax = GetLambdaLimits(self.wl,0.05,wlim=eval(lm))
+   self.awlmin, self.awlmax = GetLambdaLimits((self.wl, self.wl2), 0.05, wlim=eval(lm))
   print('*** Lambda limits set to: (%6.1f, %6.1f) ***' % (self.awlmin, self.awlmax))
   self.ax2.set_xlim((self.awlmin,self.awlmax))
   self.fig2.canvas.draw()
@@ -683,8 +689,7 @@ class RSSViewer:
      self.redshift = velocity / self.c
     if self.orig_wl_rest is None:
      self.orig_wl_rest = self.wl
-    self.color, self.fff = self.IntFilter(self.ifil,self.list_filters,self.wl,self.dat,True,False,
-                            self.dfilter,self.gdl,center=self.cfilter,remove_cont=self.remove_cont)
+    self.set_fff(verb=False, dl=self.gdl)
     self.updatePatch()
     self.PlotSpec()
     self.fig.canvas.draw()
@@ -698,8 +703,7 @@ class RSSViewer:
    if not self.wrest and self.velocity is not None:
     print('Observed Wavelength (redshift = %8.5f | velocity = %7.1f km/s)' % (self.redshift,self.velocity))
     self.wl = self.orig_wl
-   self.color, self.fff = self.IntFilter(self.ifil,self.list_filters,self.wl,self.dat,True,False,
-                           self.dfilter,self.gdl,center=self.cfilter,remove_cont=self.remove_cont)
+   self.set_fff(verb=False, dl=self.gdl)
    self.updatePatch()
    self.PlotSpec()
    self.fig.canvas.draw()
@@ -707,8 +711,14 @@ class RSSViewer:
    self.wrest = ~self.wrest
 
  def updatePatch(self):
-  self.cmin, self.cmax = get_min_max(self.color)
-  self.p.set_array(self.color)
+  color = self.color
+  if self.fitscom is not None:
+   if (self.wl[0] <= self.wmax) and (self.wmax <= self.wl[-1]):
+    color = self.color
+   if (self.wl2[0] <= self.wmax) and (self.wmax <= self.wl2[-1]):
+    color = self.color2
+  self.cmin, self.cmax = get_min_max(color)
+  self.p.set_array(color)
   self.p.set_clim([self.cmin,self.cmax])
 
  def updatePassBand(self, remove=False):
@@ -717,13 +727,23 @@ class RSSViewer:
    self.pbline = None
    self.pband.remove()
    self.pband = None
-  self.pbline = self.ax2.plot(self.wl,self.fff*self.dat[self.ids].max()*self.fp,'g')
-  self.pband = self.ax2.fill_between(self.wl,self.fff*self.dat[self.ids].max()*self.fp,color='g',alpha=0.25)
+  if self.fitscom is None:
+   self.pbline = self.ax2.plot(self.wl,self.fff*self.dat[self.ids].max()*self.fp,'g')
+   self.pband = self.ax2.fill_between(self.wl,self.fff*self.dat[self.ids].max()*self.fp,color='g',alpha=0.25)
+  else:
+   if (self.wl[0] <= self.wmax) and (self.wmax <= self.wl[-1]):
+    self.pbline = self.ax2.plot(self.wl,self.fff*self.dat[self.ids].max()*self.fp,'g')
+    self.pband = self.ax2.fill_between(self.wl,self.fff*self.dat[self.ids].max()*self.fp,color='g',alpha=0.25)
+   elif (self.wl2[0] <= self.wmax) and (self.wmax <= self.wl2[-1]):
+    self.pbline = self.ax2.plot(self.wl2,self.fff2*self.dat2[self.ids].max()*self.fp,'g')
+    self.pband = self.ax2.fill_between(self.wl2,self.fff2*self.dat2[self.ids].max()*self.fp,color='g',alpha=0.25)
+   else:
+    pass
   self.ax2.set_xlim((self.awlmin,self.awlmax))
   self.ax2.set_ylim((self.fmin,self.fmax))
 
  def ChangeFilter(self,event):
-  if event.key in ['t','T','a','r']:
+  if event.key in ['t','T','a','c']:
    if event.key == 't':
     self.ifil += 1
     if self.ifil >= self.nfil: self.ifil = 0
@@ -732,12 +752,11 @@ class RSSViewer:
     if self.ifil < 0: self.ifil = self.nfil - 1
    if event.key == 'a': 
     self.cfilter = not self.cfilter
-   if event.key == 'r': 
+   if event.key == 'c': 
     self.remove_cont = not self.remove_cont
-   if event.key != 'r':
+   if event.key != 'c':
     self.gdl = 0
-   self.color, self.fff = self.IntFilter(self.ifil,self.list_filters,self.wl,self.dat,True,True,
-                          self.dfilter,center=self.cfilter,remove_cont=self.remove_cont)
+   self.set_fff(verb=True, dl=self.gdl)
    self.updatePatch()
    self.updatePassBand(remove=True)
    self.fig.canvas.draw()
@@ -793,12 +812,20 @@ class RSSViewer:
     # Change mode of spectra view if we are in the SpectraViewer Figure
     if event.canvas.figure.get_label() == self.fig2_label: self.spec_mode += 1
     self.ax2.cla()
+    # Set selection spectra mode so other modes like error visualization do not activate
+    self.ids = None
     #self.ax.add_collection(self.p)
     if (self.spec_mode % 3) == 0 or (self.spec_mode % 3) == 1:
-     [self.ax2.plot(self.wl,self.dat[i],label=str(i+1),picker=True) for i in self.list]
+     for i in self.list:
+      p = self.ax2.plot(self.wl,self.dat[i],label=str(i+1),picker=True)
+      if self.fitscom is not None:
+       self.ax2.plot(self.wl2,self.dat2[i],label=str(i+1),picker=True,c=p[0].get_color(),alpha=0.7)
     if (self.spec_mode % 3) == 1 or (self.spec_mode % 3) == 2:
      self.intspec = np.take(self.dat,self.list,axis=0).sum(0)
-     self.ax2.plot(self.wl,self.intspec,label=self.sint,picker=True)
+     p = self.ax2.plot(self.wl,self.intspec,label=self.sint,picker=True)
+     if self.fitscom is not None:
+      intspec = np.ma.array([self.dat2[i] for i in self.list]).sum(0)
+      self.ax2.plot(self.wl2,intspec,label=self.sint,picker=True,c=p[0].get_color(),alpha=0.7)
     self.fig2.canvas.draw()
 
  def PlotSpec(self):
@@ -813,14 +840,16 @@ class RSSViewer:
     self.ax2.plot(self.wl2,self.dat2,label=self.fitscom)
   if self.errcom:
    self.ax2.errorbar(self.wl,self.dat[self.ids,:],yerr=self.err[self.ids,:],fmt="none",ecolor='grey')
+   if self.fitscom is not None and self.err2 is not None:
+    self.ax2.errorbar(self.wl2,self.dat2[self.ids,:],yerr=self.err2[self.ids,:],fmt="none",ecolor='grey')
   if self.perr is not None:
    self.ax2.plot(self.wl,self.perr[self.ids,:],'r')
   #self.pbline, = self.ax2.plot(self.wlpbline,self.fff*self.dat[idf].max()*self.fp,'g')
-  self.updatePassBand()
+  self.updatePassBand(remove=False)
   self.ax2.set_title((('ID spaxel = %'+str(self.nsfm)+'i') % (self.ids+1)),ha='left',position=(0.4,1))
 
  def ErrorSpec(self,event):
-  if event.key == 'e':
+  if event.key == 'e' and self.ids is not None:
    self.errcom = ~self.errcom 
    if self.errcom and self.err is None:
     self.errcom = False
@@ -828,12 +857,15 @@ class RSSViewer:
    if self.errcom and self.err is not None:
     if self.ids is not None:
      self.ax2.errorbar(self.wl,self.dat[self.ids,:],yerr=self.err[self.ids,:],fmt="none",ecolor='grey')
+     if self.fitscom is not None and self.err2 is not None:
+      self.ax2.errorbar(self.wl2,self.dat2[self.ids,:],yerr=self.err2[self.ids,:],fmt="none",ecolor='grey')
     self.fig2.canvas.draw()
    if not self.errcom and self.err is not None:
     self.errcom = False
     if self.ids is not None:
      self.ax2.cla()
      self.PlotSpec()
+     self.updatePassBand()
      self.fig2.canvas.draw()
 
  def GetSpectraInfo(self,event):
@@ -875,16 +907,18 @@ class RSSViewer:
    lf,ff = self.BoxFilter()
   if verb is True and fil is not None:
    print('Selected Filter: ' + fil[ifi])
+  iffmax = np.argmax(ff)
   if center:
-   wmax = lf[np.argmax(ff)]
+   wmax = lf[iffmax]
    wcen = (lm.min() + lm.max()) / 2.0
    lf += wcen - wmax
-  if dl is not None: 
+  if dl is not None:
    lf = lf + dl
+  self.wmax = lf[iffmax]
   fff = np.interp(lm, lf, ff)
   ival = ftrapz(lm, fff, dat)
   if remove_cont:
-   print ('>>> Continuum removed')
+   if verb: print ('>>> Continuum removed')
    dlw = lf.max() - lf.min()
    lfff = np.interp(lm, lf - dlw, ff)
    rfff = np.interp(lm, lf + dlw, ff)
@@ -894,6 +928,16 @@ class RSSViewer:
    return ival, fff
   else:
    return ival
+
+ def set_fff(self, **kwargs):
+   kwargs.pop('pasb', None)
+   dpars = dict(ifi=self.ifil, fil=self.list_filters, pasb=True, dfil=self.dfilter, 
+                center=self.cfilter, remove_cont=self.remove_cont)
+   dpars.update(kwargs)
+   self.color, self.fff = self.IntFilter(lm=self.wl, dat=self.dat, **dpars)
+   if self.fitscom is not None:
+    dpars['verb'] = False
+    self.color2, self.fff2 = self.IntFilter(lm=self.wl2, dat=self.dat2, **dpars)
 
  def PassBandPress(self,event):
   if self.pband is None: return
@@ -913,13 +957,16 @@ class RSSViewer:
  def PassBandRelease(self,event):
   if self.pband is None: return
   tb = plt.get_current_fig_manager().toolbar
-  if tb.mode == '' and self.dl is not None:
+  if tb.mode == '' and self.dl is not None and self.pressevent is not None:
    self.pressevent = None
    self.gdl = self.gdl + self.dl
-   self.color, self.fff = self.IntFilter(self.ifil,self.list_filters,self.wl,self.dat,True,False,
-                          self.dfilter,self.gdl,center=self.cfilter,remove_cont=self.remove_cont)
-   self.updatePassBand(remove=True)
+   self.set_fff(verb=False, dl=self.gdl)
    self.updatePatch()
+   self.updatePassBand(remove=True)
+   if self.iclm:
+    if self.icmp is not None:
+     self.zmode = self.icmp.zmode
+    self.icmp = IntColorMap(self.p, zmode=self.zmode)
    #self.ax2.set_xlim(self.ax2.get_xlim())
    self.fig.canvas.draw()
    self.fig2.canvas.draw()

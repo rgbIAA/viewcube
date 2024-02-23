@@ -2,7 +2,7 @@
 #                              VIEWCUBE                                    #
 #                              PYTHON 3                                    #
 #                                                                          #
-# RGB@IAA ---> Last Change: 2024/02/21                                     #
+# RGB@IAA ---> Last Change: 2024/02/23                                     #
 ############################################################################
 #
 #
@@ -263,6 +263,8 @@ class CubeViewer:
   self.sa = sa
 # Color Map dynamic range
   self.iclm = iclm
+  self.icmp = None
+  self.zmode = False
 # Size Windows
   self.fig1_size = fig_spaxel_size
   self.fig2_size = fig_spectra_size
@@ -464,8 +466,7 @@ class CubeViewer:
   if self.list_filters is not None:
    self.ifil = GetIdFilter(self.list_filters,self.default_filter,self.dfilter)
    self.nfil = len(self.list_filters)
-  self.color, self.fff = self.IntFilter(self.ifil,self.list_filters,self.wl,self.dcolor,True,False,
-                         self.dfilter,center=self.cfilter,remove_cont=self.remove_cont)
+  self.set_fff(verb=False)
   self.gdl = 0 # Global delta position filter
   #color = dat[:,0:1900].sum(axis=1)
 
@@ -774,8 +775,7 @@ class CubeViewer:
     if self.orig_wl_rest is None:
      self.orig_wl_rest = self.wl
     if self.ix is not None and self.iy is not None:
-     self.color, self.fff = self.IntFilter(self.ifil,self.list_filters,self.wl,self.dcolor,True,False,
-                            self.dfilter,self.gdl,center=self.cfilter,remove_cont=self.remove_cont)
+     self.set_fff(verb=False, dl=self.gdl)
      self.PlotSpec()
      self.updatePatch()
      self.fig.canvas.draw()
@@ -790,8 +790,7 @@ class CubeViewer:
     print('Observed Wavelength (redshift = %8.5f | velocity = %7.1f km/s)' % (self.redshift,self.velocity))
     self.wl = self.orig_wl
    if self.ix is not None and self.iy is not None:
-    self.color, self.fff = self.IntFilter(self.ifil,self.list_filters,self.wl,self.dcolor,True,False,
-                           self.dfilter,self.gdl,center=self.cfilter,remove_cont=self.remove_cont)
+    self.set_fff(verb=False, dl=self.gdl)
     self.PlotSpec()
     self.updatePatch()
     self.fig.canvas.draw()
@@ -822,7 +821,7 @@ class CubeViewer:
      self.fig2.canvas.draw()
 
  def ErrorSpec(self,event):
-  if event.key == 'e' and not ((self.spec_mode % 3) == 0 or (self.spec_mode % 3) == 1):
+  if event.key == 'e' and self.ix is not None and self.iy is not None:
    self.errcom = ~self.errcom 
    if self.errcom and self.err is None:
     self.errcom = False
@@ -892,16 +891,18 @@ class CubeViewer:
    lf,ff = self.BoxFilter()
   if verb is True and fil is not None:
    print('Selected Filter: ' + fil[ifi])
+  iffmax = np.argmax(ff)
   if center:
-   wmax = lf[np.argmax(ff)]
+   wmax = lf[iffmax]
    wcen = (lm.min() + lm.max()) / 2.0
    lf += wcen - wmax
   if dl is not None:
    lf = lf + dl
+  self.wmax = lf[iffmax]
   fff = np.interp(lm, lf, ff)
   ival = ftrapz(lm, fff, dat)
   if remove_cont:
-   print ('>>> Continuum removed')
+   if verb: print ('>>> Continuum removed')
    dlw = lf.max() - lf.min()
    lfff = np.interp(lm, lf - dlw, ff)
    rfff = np.interp(lm, lf + dlw, ff)
@@ -912,11 +913,27 @@ class CubeViewer:
   else:
    return ival
 
- def updatePatch(self):
-  self.cmin, self.cmax = get_min_max(self.color)
-  self.p.set_array(self.color)
-  self.p.set_clim([self.cmin,self.cmax])
+ def set_fff(self, **kwargs):
+   kwargs.pop('pasb', None)
+   dpars = dict(ifi=self.ifil, fil=self.list_filters, pasb=True, dfil=self.dfilter, 
+                center=self.cfilter, remove_cont=self.remove_cont)
+   dpars.update(kwargs)
+   self.color, self.fff = self.IntFilter(lm=self.wl, dat=self.dcolor, **dpars)
+   if self.fitscom is not None and 'Synthetic' not in self.fitscom:
+    dpars['verb'] = False
+    self.color2, self.fff2 = self.IntFilter(lm=self.wl2, dat=self.dat2, **dpars)
 
+ def updatePatch(self):
+  color = self.color
+  if not (self.fitscom is None or (self.fitscom is not None and 'Synthetic' in self.fitscom)):
+   if (self.wl[0] <= self.wmax) and (self.wmax <= self.wl[-1]):
+    color = self.color
+   if (self.wl2[0] <= self.wmax) and (self.wmax <= self.wl2[-1]):
+    color = self.color2
+  self.cmin, self.cmax = get_min_max(color)
+  self.p.set_array(color)
+  self.p.set_clim([self.cmin,self.cmax])
+  
  def updatePassBand(self, remove=False):
   if self.pbline is not None and remove: 
    self.pbline.pop(0).remove()
@@ -927,8 +944,18 @@ class CubeViewer:
    self.pbline = self.ax2.plot(self.wl,self.fff*self.res[:,self.iy,self.ix].max()*self.fp,'g')
    self.pband = self.ax2.fill_between(self.wl,self.fff*self.res[:,self.iy,self.ix].max()*self.fp,color='g',alpha=0.25)
   else:
-   self.pbline = self.ax2.plot(self.wl,self.fff*self.dat[:,self.iy,self.ix].max()*self.fp,'g')
-   self.pband = self.ax2.fill_between(self.wl,self.fff*self.dat[:,self.iy,self.ix].max()*self.fp,color='g',alpha=0.25)
+   if self.fitscom is None or (self.fitscom is not None and 'Synthetic' in self.fitscom):
+    self.pbline = self.ax2.plot(self.wl,self.fff*self.dat[:,self.iy,self.ix].max()*self.fp,'g')
+    self.pband = self.ax2.fill_between(self.wl,self.fff*self.dat[:,self.iy,self.ix].max()*self.fp,color='g',alpha=0.25)
+   else:
+    if (self.wl[0] <= self.wmax) and (self.wmax <= self.wl[-1]):
+     self.pbline = self.ax2.plot(self.wl,self.fff*self.dat[:,self.iy,self.ix].max()*self.fp,'g')
+     self.pband = self.ax2.fill_between(self.wl,self.fff*self.dat[:,self.iy,self.ix].max()*self.fp,color='g',alpha=0.25)
+    elif (self.wl2[0] <= self.wmax) and (self.wmax <= self.wl2[-1]):
+     self.pbline = self.ax2.plot(self.wl2,self.fff2*self.dat2[:,self.iy,self.ix].max()*self.fp,'g')
+     self.pband = self.ax2.fill_between(self.wl2,self.fff2*self.dat2[:,self.iy,self.ix].max()*self.fp,color='g',alpha=0.25)
+    else:
+     pass
   self.ax2.set_xlim((self.awlmin,self.awlmax))
   self.ax2.set_ylim((self.fmin,self.fmax))
 
@@ -946,8 +973,7 @@ class CubeViewer:
     self.remove_cont = not self.remove_cont
    if event.key != 'c':
     self.gdl = 0
-   self.color, self.fff = self.IntFilter(self.ifil,self.list_filters,self.wl,self.dcolor,True,True,
-                          self.dfilter,center=self.cfilter,remove_cont=self.remove_cont)
+   self.set_fff(verb=True, dl=self.gdl)
    self.updatePatch()
    self.updatePassBand(remove=True)
    self.fig.canvas.draw()
@@ -1011,6 +1037,9 @@ class CubeViewer:
     # Change mode of spectra view if we are in the SpectraViewer Figure
     if event.canvas.figure.get_label() == self.fig2_label: self.spec_mode += 1
     self.ax2.cla()
+    # Set selection spectra mode so other modes like error visualization do not activate
+    self.iy = None
+    self.ix = None
     if (self.spec_mode % 3) == 0 or (self.spec_mode % 3) == 1:
      for x,y in self.list:
       p = self.ax2.plot(self.wl,self.dat[:,y,x],label=str(x)+','+str(y),picker=True)
@@ -1023,7 +1052,6 @@ class CubeViewer:
      if self.fitscom is not None:
       intspec = np.ma.array([self.dat2[:,y,x] for x,y in self.list]).sum(0)
       self.ax2.plot(self.wl2,intspec,label=self.sint,picker=True,c=p[0].get_color(),alpha=0.7)
-
     self.fig2.canvas.draw()
   if not event.inaxes and self.soni_mode and self.sc is not None and self.sc.cs is not None:
    self.sc.stop_sound()
@@ -1158,13 +1186,14 @@ class CubeViewer:
   if tb.mode == '' and self.pressevent is not None:
    self.pressevent = None
    self.gdl = self.gdl + self.dl
-   self.color, self.fff = self.IntFilter(self.ifil,self.list_filters,self.wl,self.dcolor,True,False,
-                          self.dfilter,self.gdl,center=self.cfilter,remove_cont=self.remove_cont)
-   self.updatePatch()
+   self.set_fff(verb=False, dl=self.gdl)
    self.updatePassBand(remove=True)
+   self.updatePatch()
    #self.ax2.set_xlim(self.ax2.get_xlim())
    if self.iclm: 
-    self.icmp = IntColorMap(self.p)
+    if self.icmp is not None:
+     self.zmode = self.icmp.zmode
+    self.icmp = IntColorMap(self.p, zmode=self.zmode)
    self.fig.canvas.draw()
    self.fig2.canvas.draw()
 
@@ -1190,8 +1219,7 @@ class CubeViewer:
   self.ax = self.fig.add_subplot(111)
   norm = rnorm(self.norm) if self.icmp.scale is None else rnorm(self.icmp.scale)
   if color:
-   self.color, self.fff = self.IntFilter(self.ifil,self.list_filters,self.wl,self.dcolor,
-                          True,False,self.dfilter,self.gdl,center=self.cfilter)
+   self.set_fff(verb=False, dl=self.gdl)
   self.p = self.ax.imshow(self.color,alpha=self.palpha,extent=self.ext,cmap=self.p.get_cmap(),
              norm=norm,interpolation='nearest',origin='lower',aspect='auto')
   self.cmin, self.cmax = get_min_max(self.color)

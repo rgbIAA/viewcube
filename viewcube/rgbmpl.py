@@ -9,9 +9,9 @@
 #
 # ---------------------------------------------------------------------------
 #
-# Version 1.2.2
+# Version 1.2.3
 # Ruben Garcia Benito (RGB) - UAM/KIAA-PKU 2011
-# PYTHON 3: 2020/01/19
+# PYTHON 3: 2024/02/23
 #
 # Scaling functions written by Min-Su Shin (ILOG IRAF opcion by RGB)
 # Department of Astrophysical Sciences, Princeton University
@@ -659,7 +659,7 @@ class ColorMapList(object):
 #
 class IntColorMap:
  def __init__(self,im=None,data=None,z1=1.,z2=1000.,exponent=2.,
-	ccms=True,cdrcm=True,opf=False):
+	ccms=True,cdrcm=True,opf=False,zmode=False):
   '''Class to get Interactive Colormap and Scaling settings in Matplotlib.
 
      im = None --> The class gets the actual image [gci()]. "im" could be a 
@@ -677,6 +677,7 @@ class IntColorMap:
         rango dinamico y la escala.
      opf = False --> Forzar el rango dinamico al valor minimo y maximo de los 
 	datos. Por defecto, se pueden superar estos valores con "cdrcm"
+     zmode = False -> Zscale mode
 
 # ----------------------------------------------------------------------------
      Active keys:
@@ -703,7 +704,7 @@ class IntColorMap:
   self.ccms = ccms
   self.cdrcm = cdrcm
   self.opf = opf
-  self.zmode = False
+  self.zmode = zmode
 
   if self.im is None:
    self.im = gci()
@@ -723,11 +724,14 @@ class IntColorMap:
   self.exponent = exponent
   self.cmindx = 0
 
+  if self.zmode:
+   self.ColorMapZscale()
+
   if self.ccms is True:
    self.im.axes.figure.canvas.mpl_connect('key_press_event', self.ChangeColorMapScale)
   if self.cdrcm is True:
    self.im.axes.figure.canvas.mpl_connect('motion_notify_event', self.ChangeDynamicRangeColorMap)
-   self.im.axes.figure.canvas.mpl_connect('key_press_event', self.ColorMapZscale)
+   self.im.axes.figure.canvas.mpl_connect('key_press_event', self.setColorMapZscale)
    self.im.axes.figure.canvas.mpl_connect('button_release_event', self.DynamicRangeInfo)
 
  def ChangeDynamicRangeColorMap(self,event):
@@ -758,20 +762,28 @@ class IntColorMap:
   if event.button == 3 and event.inaxes and tb.mode == '':
    print ('Min/Max = %8.4e / %8.4e  ||  Set to %8.4e / %8.4e' % (self.cmin,self.cmax,self.vmin,self.vmax))
 
- def ColorMapZscale(self,event):
+ def setColorMapZscale(self,event):
+  omode = self.zmode
   if event.key == 'z':
    self.zmode = not self.zmode
-   if self.zmode is True:
-    self.rmin, self.rmax = zscale(self.data)
-    self.crange = abs(self.rmax - self.rmin)
-    self.im.set_clim(self.rmin,self.rmax)
-    print ('Min/Max = %8.4e / %8.4e  ||  ZSCALE set to %8.4e / %8.4e' % (self.cmin,self.cmax,self.rmin,self.rmax))
-   else:  
-    self.rmin, self.rmax = self.cmin, self.cmax
-    self.crange = abs(self.cmax - self.cmin)
-    self.im.set_clim(self.rmin,self.rmax)
-    print ('Min/Max = %8.4e / %8.4e  ||  Dynamical range set to MIN/MAX' % (self.cmin,self.cmax))
-   self.im.axes.figure.canvas.draw()
+  if self.zmode and self.zmode != omode:
+   self.ColorMapZscale()
+  if not self.zmode and self.zmode != omode:
+   self.ColorMapMinMax()
+
+ def ColorMapZscale(self):
+  self.rmin, self.rmax = zscale(self.data)
+  self.crange = abs(self.rmax - self.rmin)
+  self.im.set_clim(self.rmin,self.rmax)
+  print ('Min/Max = %8.4e / %8.4e  ||  ZSCALE set to %8.4e / %8.4e' % (self.cmin,self.cmax,self.rmin,self.rmax))
+  self.im.axes.figure.canvas.draw()
+
+ def ColorMapMinMax(self):
+  self.rmin, self.rmax = self.cmin, self.cmax
+  self.crange = abs(self.cmax - self.cmin)
+  self.im.set_clim(self.rmin,self.rmax)
+  print ('Min/Max = %8.4e / %8.4e  ||  Dynamical range set to MIN/MAX' % (self.cmin,self.cmax))
+  self.im.axes.figure.canvas.draw()
    
  def ChangeColorMapScale(self, event):
   colormaps = ColorMapList().colormaps
@@ -797,7 +809,7 @@ class IntColorMap:
   elif event.key == 'm':
    print ('Available Color Maps:\n')
    print (colormaps)
-   newmap = raw_input('\nWrite Colormap Name (Enter to exit): ')
+   newmap = input('\nWrite Colormap Name (Enter to exit): ')
    if len(newmap) == 0:
     pass
    elif newmap not in colormaps:
@@ -834,7 +846,7 @@ class IntColorMap:
 
   elif event.key == 'v':
    print ('Input new Min/Max [tuple: (min,max)] values ("None" also possible)')
-   nval = raw_input('[Enter for nothing to do]: ')
+   nval = input('[Enter for nothing to do]: ')
    if len(nval) == 0: 
     print ('Actual values: %8.4e / %8.4e' % self.im.get_clim())
     #self.im.set_clim([self.cmin, self.cmax])
