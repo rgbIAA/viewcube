@@ -1285,6 +1285,7 @@ class CubeViewer:
   self.ax5.plot(self.wl,self.K.tres)
   self.ax5.set_xlabel('Wavelength ($\AA$)')
   self.ax5.set_ylim(-0.1,0.1)
+  self.ax5.set_xlim(awlmin,awlmax)
   self.ax6 = self.fig4.add_axes([0.92,0.1,0.03,0.88])
   self.fig4.colorbar(pr,cax=self.ax6)
   self.fig4.canvas.draw()
@@ -1298,6 +1299,7 @@ class CubeViewer:
   if event.inaxes and tb.mode == '' and event.button == 1:
    x,y=event.xdata,int(round(event.ydata))
    if y > 0 and y <= self.zones.max() + 0.5:
+    awlmin, awlmax = self.wl[0], self.wl[-1]
     self.ax5.cla()
     self.ax5.set_xlabel('Wavelength ($\AA$)')
     if self.hline is not None:
@@ -1305,6 +1307,7 @@ class CubeViewer:
     self.ax5.plot(self.wl,self.K.zres[:,y-1])
     self.hline = self.ax4.axhline(y,lw=2,c='g',label='#%i' % y)
     self.ax5.set_ylim(-0.1,0.1)
+    self.ax5.set_xlim(awlmin,awlmax)
     self.ax5.text(1.,-0.36,'Zone #%i' % y,weight='bold',
 	transform=self.ax5.transAxes,ha='right',multialignment='right')
     self.fig4.canvas.draw()
