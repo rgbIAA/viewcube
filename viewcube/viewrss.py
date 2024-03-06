@@ -376,6 +376,7 @@ class RSSViewer:
   naxes = len(shp)
   self.root = '.'.join(self.name_fits.split('.')[:-1])
   #min, max = self.dat.min(), self.dat.max()
+  self.wl2 = None
   if self.fitscom is not None:
    #self.dat2 = ofits(self.fitscom,hd=False)
    self.fobj2 = LoadFits(self.fitscom, flip2disp=False, **kwargs)
