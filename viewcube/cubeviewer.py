@@ -137,7 +137,7 @@ def PRectangle(x,y,r):
  if isinstance(x,(list,tuple)):
   x = numpy.array(x)
   y = numpy.array(y)
- if isinstance(x,(int,float,np.int,np.float)):
+ if isinstance(x,(int,float)):
   xv = x + numpy.array([0.,0.,r,r])
   yv = y + numpy.array([0.,r,r,0.])
  else:
@@ -1272,7 +1272,6 @@ class CubeViewer:
      self.updateAx1()
 
  def plotResidualMap(self):
-  import matplotlib.gridspec as gridspec
   self.fig4 = plt.figure(4,(9,7))
   self.fig4.set_label('2D Residual Map')
   self.setWindowTitle(self.fig4, '2D Residual Map')
@@ -1451,7 +1450,7 @@ class CubeViewer:
      self.cf = not self.cf
      self.ccc= self.axcolor2 if self.cf else self.axcolor1
      ctf.color, ctf.hovercolor = self.ccc, self.ccc
-     ctf.ax.set_axis_bgcolor(self.ccc)
+     ctf.ax.set_facecolor(self.ccc)
      self.clab = 'Fill On' if self.cf else 'Fill Off'
      ctf.label.set_text(self.clab)
      [item[0].set_fill(self.cf) for item in self.pat]
@@ -1461,7 +1460,7 @@ class CubeViewer:
      self.sf = not self.sf
      self.scc= self.axcolor2 if self.sf else self.axcolor1
      stf.color, stf.hovercolor = self.scc, self.scc
-     stf.ax.set_axis_bgcolor(self.scc)
+     stf.ax.set_facecolor(self.scc)
      self.slab = 'Fill On' if self.sf else 'Fill Off'
      stf.label.set_text(self.slab)
      [item[0].set_fill(self.sf) for item in self.cir]
@@ -1471,7 +1470,7 @@ class CubeViewer:
      self.integrated = not self.integrated
      self.tcc = self.axcolor1 if not self.integrated else self.axcolor2
      sint.color, sint.hovercolor = self.tcc, self.tcc
-     sint.ax.set_axis_bgcolor(self.tcc)
+     sint.ax.set_facecolor(self.tcc)
      self.intlab = 'Integrated On' if self.integrated else 'Integrated Off'
      sint.label.set_text(self.intlab)
      self.fig3.canvas.draw()
@@ -1479,7 +1478,7 @@ class CubeViewer:
      self.individual = not self.individual
      self.icc = self.axcolor1 if not self.individual else self.axcolor2
      sind.color, sind.hovercolor = self.icc, self.icc
-     sind.ax.set_axis_bgcolor(self.icc)
+     sind.ax.set_facecolor(self.icc)
      self.indlab = 'Individual On' if self.individual else 'Individual Off'
      sind.label.set_text(self.indlab)
      self.fig3.canvas.draw()
@@ -1487,7 +1486,7 @@ class CubeViewer:
      self.txt = not self.txt
      self.xcc = self.axcolor1 if not self.txt else self.axcolor2
      stxt.color, stxt.hovercolor = self.xcc, self.xcc
-     stxt.ax.set_axis_bgcolor(self.xcc)
+     stxt.ax.set_facecolor(self.xcc)
      self.txtlab = 'Txt On' if self.txt else 'Txt Off'
      stxt.label.set_text(self.txtlab)
      self.fig3.canvas.draw()
@@ -1495,7 +1494,7 @@ class CubeViewer:
      self.fits = not self.fits
      self.fcc = self.axcolor1 if not self.fits else self.axcolor2
      sfit.color, sfit.hovercolor = self.fcc, self.fcc
-     sfit.ax.set_axis_bgcolor(self.fcc)
+     sfit.ax.set_facecolor(self.fcc)
      self.fitlab = 'Fits On' if self.fits else 'Fits Off'
      sfit.label.set_text(self.fitlab)
      self.fig3.canvas.draw()
