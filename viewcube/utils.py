@@ -2,7 +2,7 @@
 #                              VIEWCUBE UTILS                              #
 #                                 PYTHON 3                                 #
 #                                                                          #
-# RGB@IAA ---> Last Change: 2023/01/30                                     #
+# RGB@IAA ---> Last Change: 2024/03/25                                     #
 ############################################################################
 #
 #
@@ -452,7 +452,8 @@ class LoadFits:
     self.cdelt = self.hdr.get('CD3_3') # MUSE
     self.wave = self.crval + self.cdelt*np.arange(self.nwave)
    # For WEAVE *single* RSS pointings
-   if ('CRVAL1' in list(self.hdr.keys())) and ('CD1_1' in list(self.hdr.keys())) and ('WEAVE' in self.instrument) and self.data.ndim == 2:
+   if ('CRVAL1' in list(self.hdr.keys())) and ('CD1_1' in list(self.hdr.keys())) and\
+       (self.instrument is not None and 'WEAVE' in self.instrument) and self.data.ndim == 2:
     self.crval = self.hdr.get('CRVAL1') 
     self.cdelt = self.hdr.get('CD1_1') 
     self.wave = self.crval + self.cdelt*np.arange(self.nwave)
