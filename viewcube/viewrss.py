@@ -2,13 +2,13 @@
 #                               VIEWRSS                                    #
 #                               PYTHON 3                                   #
 #                                                                          #
-# RGB@IAA ---> Last Change: 2024/02/23                                     #
+# RGB@IAA ---> Last Change: 2024/05/19                                     #
 ############################################################################
 #
 #
 #
 ################################ VERSION ###################################
-VERSION = '0.1.3'                                                          #
+VERSION = '0.1.4'                                                          #
 ############################################################################
 #
 '''
@@ -723,21 +723,24 @@ class RSSViewer:
   self.p.set_clim([self.cmin,self.cmax])
 
  def updatePassBand(self, remove=False):
+  wl  = self.wl if self.wl.ndim == 1 else self.wl[self.ids]
+  fff = self.fff if self.fff.ndim == 1 else self.fff[self.ids]
   if self.pbline is not None and remove: 
    self.pbline.pop(0).remove()
    self.pbline = None
    self.pband.remove()
    self.pband = None
   if self.fitscom is None:
-   self.pbline = self.ax2.plot(self.wl,self.fff*self.dat[self.ids].max()*self.fp,'g')
-   self.pband = self.ax2.fill_between(self.wl,self.fff*self.dat[self.ids].max()*self.fp,color='g',alpha=0.25)
+   self.pbline = self.ax2.plot(wl,fff*self.dat[self.ids].max()*self.fp,'g')
+   self.pband = self.ax2.fill_between(wl,fff*self.dat[self.ids].max()*self.fp,color='g',alpha=0.25)
   else:
-   if (self.wl[0] <= self.wmax) and (self.wmax <= self.wl[-1]):
-    self.pbline = self.ax2.plot(self.wl,self.fff*self.dat[self.ids].max()*self.fp,'g')
-    self.pband = self.ax2.fill_between(self.wl,self.fff*self.dat[self.ids].max()*self.fp,color='g',alpha=0.25)
-   elif (self.wl2[0] <= self.wmax) and (self.wmax <= self.wl2[-1]):
-    self.pbline = self.ax2.plot(self.wl2,self.fff2*self.dat2[self.ids].max()*self.fp,'g')
-    self.pband = self.ax2.fill_between(self.wl2,self.fff2*self.dat2[self.ids].max()*self.fp,color='g',alpha=0.25)
+   wl2 = self.wl2 if self.wl2.ndim == 1 else self.wl2[self.ids]
+   if (wl[0] <= self.wmax) and (self.wmax <= wl[-1]):
+    self.pbline = self.ax2.plot(wl,fff*self.dat[self.ids].max()*self.fp,'g')
+    self.pband = self.ax2.fill_between(wl,fff*self.dat[self.ids].max()*self.fp,color='g',alpha=0.25)
+   elif (wl2[0] <= self.wmax) and (self.wmax <= wl2[-1]):
+    self.pbline = self.ax2.plot(wl2,self.fff2*self.dat2[self.ids].max()*self.fp,'g')
+    self.pband = self.ax2.fill_between(wl2,self.fff2*self.dat2[self.ids].max()*self.fp,color='g',alpha=0.25)
    else:
     pass
   self.ax2.set_xlim((self.awlmin,self.awlmax))
@@ -818,33 +821,40 @@ class RSSViewer:
     #self.ax.add_collection(self.p)
     if (self.spec_mode % 3) == 0 or (self.spec_mode % 3) == 1:
      for i in self.list:
-      p = self.ax2.plot(self.wl,self.dat[i],label=str(i+1),picker=True)
+      wl = self.wl if self.wl.ndim == 1 else self.wl[i]
+      p = self.ax2.plot(wl,self.dat[i],label=str(i+1),picker=True)
       if self.fitscom is not None:
-       self.ax2.plot(self.wl2,self.dat2[i],label=str(i+1),picker=True,c=p[0].get_color(),alpha=0.7)
-    if (self.spec_mode % 3) == 1 or (self.spec_mode % 3) == 2:
-     self.intspec = np.take(self.dat,self.list,axis=0).sum(0)
-     p = self.ax2.plot(self.wl,self.intspec,label=self.sint,picker=True)
-     if self.fitscom is not None:
-      intspec = np.ma.array([self.dat2[i] for i in self.list]).sum(0)
-      self.ax2.plot(self.wl2,intspec,label=self.sint,picker=True,c=p[0].get_color(),alpha=0.7)
+       wl2 = self.wl2 if self.wl2.ndim == 1 else self.wl2[i]
+       self.ax2.plot(wl2,self.dat2[i],label=str(i+1),picker=True,c=p[0].get_color(),alpha=0.7)
+    if (self.spec_mode % 3) == 1 or (self.spec_mode % 3) == 2: 
+     if self.wl.ndim == 1:
+      self.intspec = np.take(self.dat,self.list,axis=0).sum(0)
+      p = self.ax2.plot(self.wl,self.intspec,label=self.sint,picker=True)
+      if self.fitscom is not None:
+       intspec = np.ma.array([self.dat2[i] for i in self.list]).sum(0)
+       self.ax2.plot(self.wl2,intspec,label=self.sint,picker=True,c=p[0].get_color(),alpha=0.7)
+     else:
+      print ('>>> Integrated spectrum NOT available! Wavelength array ndim = 2')
     self.fig2.canvas.draw()
 
  def PlotSpec(self):
   if self.ids is None:
    return
   self.ax2.cla()
-  self.ax2.plot(self.wl, self.dat[self.ids,:])
+  wl = self.wl if self.wl.ndim == 1 else self.wl[self.ids]
+  self.ax2.plot(wl, self.dat[self.ids,:])
   if self.fitscom is not None:
+   wl2 = self.wl2 if self.wl2.ndim == 1 else self.wl2[self.ids]
    if self.dat2.ndim == 2:
-    self.ax2.plot(self.wl2,self.dat2[self.ids,:],label=self.fitscom)
+    self.ax2.plot(wl2,self.dat2[self.ids,:],label=self.fitscom)
    if self.dat2.ndim == 1:
-    self.ax2.plot(self.wl2,self.dat2,label=self.fitscom)
+    self.ax2.plot(wl2,self.dat2,label=self.fitscom)
   if self.errcom:
-   self.ax2.errorbar(self.wl,self.dat[self.ids,:],yerr=self.err[self.ids,:],fmt="none",ecolor='grey')
+   self.ax2.errorbar(wl,self.dat[self.ids,:],yerr=self.err[self.ids,:],fmt="none",ecolor='grey')
    if self.fitscom is not None and self.err2 is not None:
-    self.ax2.errorbar(self.wl2,self.dat2[self.ids,:],yerr=self.err2[self.ids,:],fmt="none",ecolor='grey')
+    self.ax2.errorbar(wl2,self.dat2[self.ids,:],yerr=self.err2[self.ids,:],fmt="none",ecolor='grey')
   if self.perr is not None:
-   self.ax2.plot(self.wl,self.perr[self.ids,:],'r')
+   self.ax2.plot(wl,self.perr[self.ids,:],'r')
   #self.pbline, = self.ax2.plot(self.wlpbline,self.fff*self.dat[idf].max()*self.fp,'g')
   self.updatePassBand(remove=False)
   self.ax2.set_title((('ID spaxel = %'+str(self.nsfm)+'i') % (self.ids+1)),ha='left',position=(0.4,1))
@@ -856,10 +866,12 @@ class RSSViewer:
     self.errcom = False
     print('*** No error spectra data found ***')
    if self.errcom and self.err is not None:
+    wl = self.wl if self.wl.ndim == 1 else self.wl[self.ids]
     if self.ids is not None:
-     self.ax2.errorbar(self.wl,self.dat[self.ids,:],yerr=self.err[self.ids,:],fmt="none",ecolor='grey')
+     self.ax2.errorbar(wl,self.dat[self.ids,:],yerr=self.err[self.ids,:],fmt="none",ecolor='grey')
      if self.fitscom is not None and self.err2 is not None:
-      self.ax2.errorbar(self.wl2,self.dat2[self.ids,:],yerr=self.err2[self.ids,:],fmt="none",ecolor='grey')
+      wl2 = self.wl2 if self.wl2.ndim == 1 else self.wl2[self.ids]
+      self.ax2.errorbar(wl2,self.dat2[self.ids,:],yerr=self.err2[self.ids,:],fmt="none",ecolor='grey')
     self.fig2.canvas.draw()
    if not self.errcom and self.err is not None:
     self.errcom = False
