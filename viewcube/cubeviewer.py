@@ -2,13 +2,13 @@
 #                              VIEWCUBE                                    #
 #                              PYTHON 3                                    #
 #                                                                          #
-# RGB@IAA ---> Last Change: 2024/02/23                                     #
+# RGB@IAA ---> Last Change: 2024/09/16                                     #
 ############################################################################
 #
 #
 #
 ################################ VERSION ###################################
-VERSION = '0.3.4'                                                          #
+VERSION = '0.3.5'                                                          #
 ############################################################################
 #
 from matplotlib.collections import PatchCollection, PolyCollection
@@ -20,7 +20,9 @@ from matplotlib.widgets import  RectangleSelector
 from matplotlib.patches import Circle, Rectangle
 from distutils.version import LooseVersion
 import astropy.io.fits as pyfits
+from astropy import units as u
 from matplotlib import rcParams
+from astropy.wcs import WCS
 import matplotlib, sys, os
 import numpy as np
 import argparse
@@ -434,6 +436,9 @@ class CubeViewer:
    self.fy = len(str(self.yy)) # Number of digits of the number of pixels in Y axis
 #  Spatial resolution
    self.sr = 1.0 if (self.cdelt1 == 0 or self.cdelt2 == 0) else float(self.cdelt1)
+   self.wcs = WCS(self.hd).celestial.wcs
+   if 'deg' in self.wcs.cunit:
+       self.sr = (self.cdelt1 * u.deg).to('arcsec').value
 # Choose reference pixel and ext
    self.get_ref_pix(ref_mode)
 # Lambda
