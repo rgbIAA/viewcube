@@ -1,6 +1,9 @@
-# ViewCube - Datacube Visualization Tool
+# ViewCube - Datacube [& RSS] Visualization [& Sonification] Tool
 
-**ViewCube** is a user-friendly datacube visualizer designed to facilitate the exploration and analysis of multi-dimensional datasets. This tool enables you to easily visualize and interact with datacubes, enhancing your understanding of complex information.
+**ViewCube** is a user-friendly datacube visualizer designed to facilitate the exploration 
+and analysis of multi-dimensional datasets. This tool enables you to easily visualize and 
+interact with datacubes. Additionally, its **Sonicube** interface offers auditory exploration 
+through **sonification**, enhancing the data analysis experience.
 
 ## Documentation
 
