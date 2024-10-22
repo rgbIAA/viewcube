@@ -607,8 +607,9 @@ class CubeViewer:
 
         # Create Figure 2 (Spectral Viewer) ---------------------------------
         self.fig2 = plt.figure(2, self.fig2_size)
-        self.fig2.set_label(self.fig2_label)
-        self.setWindowTitle(self.fig2, self.fig2_label)
+        #self.fig2.set_label(self.fig2_label)
+        #self.setWindowTitle(self.fig2, self.fig2_label)
+        self.fig2.canvas.manager.set_window_title(self.fig2_label)
         self.ax2 = self.fig2.add_subplot(111)
         self.awlmin, self.awlmax = GetLambdaLimits((self.wl, self.wl2), 0.05, wlim=self.wlim)
         self.fmin, self.fmax = GetFluxLimits(self.flim)
@@ -620,8 +621,9 @@ class CubeViewer:
         # Create Figure 1 (Spaxel Viewer) ---------------------------------
         # self.exts = [self.ext[0]-0.5,self.ext[1]+0.5,self.ext[2]-0.5,self.ext[3]+0.5]
         self.fig = plt.figure(1, self.fig1_size)
-        self.fig.set_label(self.fig1_label)
-        self.setWindowTitle(self.fig, self.fig1_label)
+        #self.fig.set_label(self.fig1_label)
+        #self.setWindowTitle(self.fig, self.fig1_label)
+        self.fig.canvas.manager.set_window_title(self.fig1_label)
         self.ax = self.fig.add_subplot(111)
         self.p = self.ax.imshow(
             self.color,

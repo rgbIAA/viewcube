@@ -929,7 +929,7 @@ class IntColorMap:
                 # self.im.axes.figure.canvas.draw()
             else:
                 try:
-                    if type(eval(nval)) in (np.float, np.int):
+                    if type(eval(nval)) in (float, int):
                         print("*** You should write 2-item tuple (min,max) ***")
                     elif len(eval(nval)) != 2:
                         print("*** You should write 2-item tuple (min,max) ***")
