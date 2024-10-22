@@ -2,9 +2,19 @@
 
 **ViewCube** is a user-friendly datacube visualizer designed to facilitate the exploration and analysis of multi-dimensional datasets. This tool enables you to easily visualize and interact with datacubes, enhancing your understanding of complex information.
 
+## Documentation
+
+For detailed information on ViewCube, visit the official documentation:
+
+[https://viewcube.readthedocs.io](https://viewcube.readthedocs.io/)
+
 ## Installation
 
-To get started with ViewCube, follow these simple steps:
+We recommend referring to the ViewCube documentation for comprehensive guidance:
+
+[https://viewcube.readthedocs.io](https://viewcube.readthedocs.io/)
+
+To get started quickly, follow these simple steps:
 
 1. **Download**: Obtain the ViewCube package by downloading the `viewcube.zip` file.
 2. **Unzip**: Extract the contents of the downloaded zip file to your preferred location.
@@ -14,15 +24,15 @@ To get started with ViewCube, follow these simple steps:
     python setup.py install --user
     ```
 
-4. **Setup**: Your installation is now complete!
+4. Copy the `ViewCube.pdf` file located in the 'latex' folder to a convenient location of your choice.
+5. You can now safely remove the original folder you unzipped earlier.
+6. The ViewCube package is now installed and accessible through your Python path.
 
 ## Documentation
 
 For detailed instructions and information, consult the ViewCube documentation:
 
-1. Copy the `ViewCube.pdf` file located in the 'docs' folder to a convenient location of your choice.
-2. You can now safely remove the original folder you unzipped earlier.
-3. The ViewCube package is now installed and accessible through your Python path.
+[https://viewcube.readthedocs.io](https://viewcube.readthedocs.io/)
 
 ## Usage
 
