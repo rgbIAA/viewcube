@@ -1,7 +1,7 @@
 .. VIEWCUBE [SONICUBE] documentation master file
 
 Welcome to ViewCube [+SoniCube]'s documentation!
-=================================
+================================================
 
 .. toctree::
    :maxdepth: 2

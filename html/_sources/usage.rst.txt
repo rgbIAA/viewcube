@@ -68,7 +68,7 @@ the **spaxel viewer** and the **spectral viewer**. Depending on the backend used
 these titles will be assigned to the windows. If not, "Figure 1" will appear in place 
 of the **spaxel viewer**, and "Figure 2" will be used for the **spectral viewer**.
 
-.. list-table::
+.. .. list-table::
 ..   :widths: 50 50
 ..   :header-rows: 0
 ..
@@ -372,7 +372,8 @@ to save the integrated spectra, individual spectra, or both.
 
 It is possible to also change the spaxel selec
 
-..  Interacting with other programs
+.. Interacting with other programs
+
 Fitting Package Options
 -----------------------
 
