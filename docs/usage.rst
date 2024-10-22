@@ -5,8 +5,8 @@ ViewCube
 The aim of ViewCube is to remain lightweight and independent of the operating system. 
 Currently, there are no buttons or interface, only two plotting windows. All interactions 
 are performed using the mouse and keyboard. This tutorial will cover the different options 
-and their corresponding keys. Additionally, there is a PDF cheat sheet containing a table 
-with each key and its associated action.
+and their corresponding keys. Additionally, there is a :ref:`cheatsheet` containing a 
+table with each key and its associated action.
 
 There are plans to significantly improve ViewCube by switching to a faster plotting library 
 and introducing a menu interface. However, this is still under development.

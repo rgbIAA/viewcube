@@ -4,12 +4,13 @@ Welcome to ViewCube [+SoniCube]'s documentation!
 ================================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Contents:
 
    intro.rst
    usage.rst
    sonicube.rst
+   cheatsheet.rst
 
 
 
