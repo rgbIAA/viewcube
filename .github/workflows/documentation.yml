@@ -1,6 +1,4 @@
-name: ViewCube documentation
-
-# on: [push, pull_request, workflow_dispatch]
+name: ViewCube Documentation
 
 on:
   push:
@@ -10,26 +8,32 @@ on:
     branches:
       - main  # Run on pull requests to main branch
 
-permissions:
-  contents: write
-
 jobs:
-  docs:
+  build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'  # Use your preferred Python version
+
       - name: Install dependencies
         run: |
-          pip install sphinx sphinx_rtd_theme myst_parser
-      - name: Sphinx build
+          python -m pip install --upgrade pip
+          pip install sphinx sphinx-rtd-theme  # Add other dependencies as needed
+
+      - name: Build documentation
         run: |
-          sphinx-build doc _build
+          cd docs  # Change to your docs directory if needed
+          sphinx-build -b html . _build/html  # Adjust paths as necessary
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         with:
-          publish_branch: gh-pages
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: _build/
-          force_orphan: true
+          publish_dir: docs/_build/html  # Path to your built HTML files
+          publish_branch: gh-pages  # Branch to publish to
