@@ -83,11 +83,45 @@ For instance, your ``data`` folder might look like:
 .. code-block:: bash
 
    ...
-   NGC5732.COMB.rscube.fits                 UGC12494.COMB.rscube.fits
-   NGC5784.COMB.rscube.fits                 UGC12518.COMB.rscube.fits
-   NGC5794.COMB.rscube.fits                 UGC12519.COMB.rscube.fits
-   NGC5797.COMB.rscube.fits                 UGC12633.COMB.rscube.fits
+   NGC5732.COMB.rscube.fits/
+   NGC5784.COMB.rscube.fits/
+   NGC5794.COMB.rscube.fits/
+   NGC5797.COMB.rscube.fits/
    ...
+
+and the complete contents within each directory might be:
+
+.. code-block:: bash
+
+  ...
+  NGC5732.COMB.rscube.fits:
+  NGC5732.COMB.rscube.fits_Reference.npy
+  NGC5732.COMB.rscube.fits_Weights.data-00000-of-00001
+  NGC5732.COMB.rscube.fits_Weights.index
+  NGC5732.COMB.rscube.fits_learning_rate.png
+  checkpoint
+  
+  NGC5784.COMB.rscube.fits:
+  NGC5784.COMB.rscube.fits_Reference.npy
+  NGC5784.COMB.rscube.fits_Weights.data-00000-of-00001
+  NGC5784.COMB.rscube.fits_Weights.index
+  NGC5784.COMB.rscube.fits_learning_rate.png
+  checkpoint
+  
+  NGC5794.COMB.rscube.fits:
+  NGC5794.COMB.rscube.fits_Reference.npy
+  NGC5794.COMB.rscube.fits_Weights.data-00000-of-00001
+  NGC5794.COMB.rscube.fits_Weights.index
+  NGC5794.COMB.rscube.fits_learning_rate.png
+  checkpoint
+  
+  NGC5797.COMB.rscube.fits:
+  NGC5797.COMB.rscube.fits_Reference.npy
+  NGC5797.COMB.rscube.fits_Weights.data-00000-of-00001
+  NGC5797.COMB.rscube.fits_Weights.index
+  NGC5797.COMB.rscube.fits_learning_rate.png
+  checkpoint
+  ...
 
 You do not need to download all of the sonicubes—just those that are relevant to your project.
 
