@@ -63,7 +63,7 @@ and the corresponding sonicubes from:
 
 Create a folder (e.g. ``sonicube``) at any location of your choice. Inside this folder, 
 deploy the contents from the `sonicube` folder of the 
-[ViewCube GitHub repository](https://github.com/rgbIAA/viewcube/). 
+`ViewCube GitHub repository <https://github.com/rgbIAA/viewcube/>`_. 
 The directory should contain three subfolders for sound configuration files, along 
 with a data folder for the CALIFA sonicubes.
 
@@ -76,7 +76,7 @@ For example, if your folder is named ``sonicube``, it should contain the followi
 The subfolders ``autoencoder``, ``binaural``, and ``csound`` are obtained from 
 the ``sonicube`` directory in the ViewCube GitHub repository. The ``data`` folder, 
 on the other hand, should contain the CALIFA sonicubes, which can be downloaded 
-from the Zenodo repository.
+from the `Zenodo repository <https://zenodo.org/records/10570065>`_. 
 
 For instance, your ``data`` folder might look like:
 
