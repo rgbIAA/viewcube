@@ -329,10 +329,10 @@ Comparing spectra
 -----------------
 
 To view the spectra of selected spaxels, navigate to the spectral window and click the 
-right mouse button. Three main plotting options are available: the first displays the 
+``right mouse button``. Three main plotting options are available: the first displays the 
 individual spectra; the second combines the individual spectra with the integrated 
 spectrum, which is the coadd of all spaxels; and the third shows only the integrated 
-spectrum. You can cycle through these options by clicking the right mouse button.
+spectrum. You can cycle through these options by clicking the ``right mouse button``.
 
 .. figure:: figures/spectrum_comparison.gif
 
