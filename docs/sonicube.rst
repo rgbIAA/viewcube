@@ -15,6 +15,14 @@ range of color palettes available for visual 2D maps in ViewCube. This variety o
 options will allow users to extract or enhance different data characteristics by selecting 
 specific sonification methods, much like how a color palette reveals visual details. 
 
+A comprehensive description of the sonification module, along with its evaluation, is available 
+in the following paper:
+
+Adrián García Riber, Rubén García-Benito, Francisco Serradilla. *Interactive multimodal Integral 
+Field Spectroscopy*, RAS Techniques and Instruments, 2024, 
+`https://doi.org/10.1093/rasti/rzae049 <https://doi.org/10.1093/rasti/rzae049>`_ 
+
+
 .. vimeo:: 1005208084
    :width: 100%
 

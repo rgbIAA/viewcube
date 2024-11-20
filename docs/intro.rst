@@ -83,3 +83,14 @@ the current directory (a non-hidden ``viewcuberc`` file, withoug ``.`` at the be
 
 
 
+^^^^^^^^^^^^^^^^^^^^^^^^
+How to cite this package
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you use this package in your research—whether for visualization, sonification, or both—please 
+cite it by including as much of the following information as possible:
+
+Adrián García Riber, Rubén García-Benito, Francisco Serradilla. *Interactive multimodal Integral 
+Field Spectroscopy*, RAS Techniques and Instruments, 2024, 
+`https://doi.org/10.1093/rasti/rzae049 <https://doi.org/10.1093/rasti/rzae049>`_ 
+

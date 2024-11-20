@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.abspath('.'))
 # -- Project information -----------------------------------------------------
 
 project = 'ViewCube [+SoniCube]'
-copyright = '2015-2024, Rubén García-Benito'
+copyright = '2015-2024, Rubén García-Benito <https://rgb.iaa.es>'
 author = 'Rubén García-Benito'
 
 # The short X.Y version
