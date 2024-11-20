@@ -1,3 +1,5 @@
+.. _sonicube:
+
 ********
 SoniCube
 ********
@@ -12,6 +14,10 @@ The aim of the SoniCube interface is to offer a diverse "palette of sonification
 range of color palettes available for visual 2D maps in ViewCube. This variety of sonification 
 options will allow users to extract or enhance different data characteristics by selecting 
 specific sonification methods, much like how a color palette reveals visual details. 
+
+.. vimeo:: 1005208084
+   :width: 100%
+
 
 Installing Dependencies
 =======================
