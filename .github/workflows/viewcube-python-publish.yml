@@ -17,7 +17,10 @@ permissions:
 
 jobs:
   release-build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest] 
 
     steps:
       - uses: actions/checkout@v4
@@ -29,6 +32,7 @@ jobs:
       - name: Build release distributions
         run: |
           # NOTE: put your own distribution build steps here.
+          python -m pip install --upgrade pip
           python -m pip install build
           python -m build
 
@@ -68,3 +72,6 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist/
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}  
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
