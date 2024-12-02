@@ -1,5 +1,5 @@
 '''
-Created on Jul 12, 2013
+First created on Jul 12, 2013
 
 @author: RGB
 '''
@@ -16,26 +16,33 @@ WriteConfigFile(filerc=configfile)
 
 os.chmod(configfile, 0o666)
 
-#pyexe = sys.executable
-
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(name='ViewCube',
       version=__version__,
-      description='ViewCube',
+      description='Datacube visualization and sonification',
       author='Ruben Garcia-Benito',
       author_email='rgb@iaa.es',
       license='MIT',
-      url='http://rgb.iaa.es',
-      #download_url=None
-      packages=['viewcube'],
-      provides=['viewcube'],
+      url='https://github.com/rgbIAA/viewcube/',
+      project_urls={
+        "Documentation": "https://viewcube.readthedocs.io",
+        "Source Code": "https://github.com/rgbIAA/viewcube/",
+      },
+      packages=find_packages(), #['viewcube'],
       scripts=['scripts/ViewCube.py'],
-      requires=['numpy', 'astropy'],
-      keywords=['Scientific/Engineering'],
+      install_requires=['numpy', 'astropy'],
+      extras_require={
+          "sonicube": ["hashlib",
+                       "tensorflow",
+                       "pythonosc",
+                       "ctcsound",
+                       "librosa"],
+      },
+      keywords=['Scientific/Astrophysics/Spectroscopy/Sonification/'],
       classifiers=[
-                   "Development Status :: 4 - Beta",
-                   "Programming Language :: Python",
+                   "Programming Language :: Python :: 3",
                    "License :: OSI Approved :: MIT License",
                   ],
+      python_requires=">=3.6",   # Minimum Python version
      )
