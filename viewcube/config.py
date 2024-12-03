@@ -2,13 +2,13 @@
 #                              VIEWCUBE CONFIG                             #
 #                                 PYTHON 3                                 #
 #                                                                          #
-# RGB@IAA ---> Last Change: 2024/10/10                                     #
+# RGB@IAA ---> Last Change: 2024/11/30                                     #
 ############################################################################
 #
 #
 #
 ################################ VERSION ###################################
-VERSION = "0.0.9"                                                          #
+VERSION = "0.1.0"                                                          #
 ############################################################################
 #
 
@@ -24,6 +24,7 @@ else:
     import ConfigParser
 
 viewcuberc = "viewcuberc"
+configfile = os.path.join(os.environ.get('HOME', ''), '.' + viewcuberc)
 
 # --------------------------------------------------------------------------
 defaultParams = [
@@ -99,6 +100,10 @@ def WriteConfigFile(idict=defaultParams, cdict=None, filerc=viewcuberc):
                 else:
                     ff.write("#%-18s   : %s\n\n" % (key, idict[key]))
     ff.close()
+
+    # Make sure the file is writable
+    #os.chmod(filerc, 0o666)
+
     print('*** ViewCube Config File "%s" created! ***' % (filerc))
 
 
@@ -144,7 +149,8 @@ def GetConfig(dictParams, filerc=viewcuberc):
     if not os.path.exists(rcname):
         rcname = os.path.join(os.environ["HOME"], "." + filerc)
         if not os.path.exists(rcname):
-            print('*** VIEWCUBE configuration file "%s" NOT found!! ***' % filerc)
+            print('*** ViewCube configuration file "%s" NOT found!! ***' % filerc)
+            print('*** Run "ViewCube --config-file" to create one! ***')
             sys.exit()
     confp = ConfigParser.ConfigParser()
     confp.readfp((open(rcname)))
@@ -160,6 +166,5 @@ def GetConfig(dictParams, filerc=viewcuberc):
 
 # ---------------------------------------------------------------------------
 
-# --------------------------------------------------------------------------
+
 defaultDictParams = GetDefaultParams(defaultParams)
-# --------------------------------------------------------------------------
