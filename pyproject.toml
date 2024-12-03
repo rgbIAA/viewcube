@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ViewCube"
-version = "0.2.8"  # Replace with the correct version
+version = "0.2.9"
 description = "Datacube visualization and sonification"
 readme = "README.md"
 requires-python = ">=3.6"
