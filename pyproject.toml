@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ViewCube"
+version = "0.2.7"  # Replace with the correct version
+description = "Datacube visualization and sonification"
+readme = "README.md"
+requires-python = ">=3.6"
+license = {text = "MIT"}
+authors = [
+    {name = "Ruben Garcia-Benito", email = "rgb@iaa.es"}
+]
+keywords = ["Scientific", "Astrophysics", "Spectroscopy", "Sonification"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+dependencies = [
+    "numpy",
+    "astropy",
+]
+
+[project.optional-dependencies]
+sonicube = [
+    "hashlib",
+    "tensorflow",
+    "pythonosc",
+    "ctcsound",
+    "librosa",
+]
+
+[tool.setuptools]
+packages = { find = { include = ["viewcube*"], exclude = ["latex*", "sonicube*", "docs*", "scripts*"] } }
+
+[project.scripts]
+ViewCube = "viewcube.main:main"  # This allows using 'viewcube' as a CLI command
+
+[project.urls]
+Documentation = "https://viewcube.readthedocs.io"
+Source = "https://github.com/rgbIAA/viewcube/"
+
