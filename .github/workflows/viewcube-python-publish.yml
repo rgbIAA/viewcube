@@ -1,44 +1,34 @@
-# This is a basic workflow to help you get started with Actions
+name: Publish to PyPI
 
-name: Upload to PIP
-
-# Controls when the action will run. 
 on:
-  # Triggers the workflow when a release is created
-  release: 
-    types: [created]
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+  push:
+    branches:
+      - main  # Change to the branch you use for releases
 
 jobs:
-  build-n-publish:
-    name: Build and publish Python 🐍 distributions 📦 to PyPI and TestPyPI
+  publish:
+    name: Publish Package to PyPI
     runs-on: ubuntu-latest
-    
+
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: "3.x"
-        
-    - name: Install pypa/build
-      run: >-
-        python -m
-        pip install
-        build
-        --user
-    - name: Build a binary wheel and a source tarball
-      run: >-
-        python -m
-        build
-        --sdist
-        --wheel
-        --outdir dist/
-        .
-        
-    - name: Publish distribution 📦 to Test PyPI
-      uses: pypa/gh-action-pypi-publish@master
-      with:
-        password: ${{ secrets.TWINE_TOKEN }}
-        repository_url: https://upload.pypi.org/legacy/
+        python-version: 3.9  # Use a Python version compatible with your package
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build twine
+
+    - name: Build the package
+      run: python -m build
+
+    - name: Publish to PyPI
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.TWINE_TOKEN }}
+      run: twine upload dist/*
