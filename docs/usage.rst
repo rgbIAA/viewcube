@@ -16,22 +16,22 @@ Basic call
 
 To visualize a data cube, simply provide the name of the FITS file in the command line
 
-``ViewCube.py datacube.fits``
+``ViewCube datacube.fits``
 
-If the installation was successful, you should be able to call `ViewCube.py` from any directory.
+If the installation was successful, you should be able to call `ViewCube` from any directory.
 
 Command line options
 ====================
 
-To learn about the command line options and arguments for `ViewCube.py`, simply type:
+To learn about the command line options and arguments for `ViewCube`, simply type:
 
-``ViewCube.py -h``
+``ViewCube -h``
 
 .. code-block:: python
 
-   usage: ViewCube.py [-h] [--data DATA] [--error ERROR] [--flag FLAG] [--header HEADER] [-a A] [-b B] [-c C]
-                      [-e] [-f] [-fo FO] [-fc FC] [-i] [-k] [-m] [-p P] [-s S] [-y Y] [-w W] [--config-file]
-                      [name ...]
+   usage: ViewCube [-h] [--data DATA] [--error ERROR] [--flag FLAG] [--header HEADER] [-a A] [-b B] [-c C]
+                      [-e] [-f] [-fo FO] [-fc FC] [-i] [-k] [-m] [-p P] [-s S] [-y Y] [-v] [-w W] 
+                      [--config-file] [name ...]
    
    positional arguments:
      name             FITS file (default: None)
@@ -63,7 +63,7 @@ To learn about the command line options and arguments for `ViewCube.py`, simply 
 Using ViewCube
 ==============
 
-When a properly formatted FITS datacube is provided, `ViewCube.py` opens two windows: 
+When a properly formatted FITS datacube is provided, `ViewCube` opens two windows: 
 the **spaxel viewer** and the **spectral viewer**. Depending on the backend used, 
 these titles will be assigned to the windows. If not, "Figure 1" will appear in place 
 of the **spaxel viewer**, and "Figure 2" will be used for the **spectral viewer**.
@@ -420,7 +420,7 @@ the ``-e`` flag, along with the ``-p`` option to specify the HDU number extensio
 
 .. code-block:: python
 
-   ViewCube.py -e -p 3 NGC2906_p1.sobj.fits
+   ViewCube -e -p 3 NGC2906_p1.sobj.fits
 
 
 Alternatively, if you have a fiber position table in an ASCII file, you can specify it using 
@@ -428,7 +428,7 @@ the ``-p`` option:
 
 .. code-block:: python
 
-   ViewCube.py -p position_table.txt rss_file.fits
+   ViewCube -p position_table.txt rss_file.fits
 
 The plotting and interactive capabilities of ViewRSS are similar to those of ViewCube. 
 You can select and compare fibers in the same way you would with spaxels in a datacube.

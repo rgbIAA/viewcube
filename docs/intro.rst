@@ -28,23 +28,14 @@ providing a novel dimension to data analysis.
 Installation
 ^^^^^^^^^^^^
 
-To get started with `ViewCube <https://github.com/rgbIAA/viewcube>`_, follow these simple steps:
+To get started with `ViewCube <https://github.com/rgbIAA/viewcube>`_, simply install it 
+via pip using the following command:
 
-1. **Download**: Obtain the `ViewCube <https://github.com/rgbIAA/viewcube>`_ package by downloading 
-   the `viewcube.zip` file from its GitHub repository:
+   ``pip install viewcube``
 
-    `https://github.com/rgbIAA/viewcube <https://github.com/rgbIAA/viewcube>`_
+For more information, visit the `ViewCube PyPI page <https://pypi.org/project/ViewCube/>`_.
 
-2. **Unzip**: Extract the contents of the downloaded zip file to your preferred location.
-3. **Installation**: Navigate to the unzipped directory using the terminal, then execute the following command: 
-
-    ``python setup.py install --user``
-
-    The ``-- user`` (local) argument is optional.
-
-4. Your (basic) installation is now complete!
-
-To check the ```site-packages``` directory for a non-local Python installation, 
+To check the ``site-packages`` directory for a non-local Python installation, 
 type the following command in the command line:
 
 ``python -m site``
@@ -53,34 +44,43 @@ Alternatively, if you want to see only the ``site-packages`` directory:
 
 ``python -c "import site; print(site.getsitepackages())"``
 
-
-The installation should have placed the executable "ViewCube.py" file in your ``$PATH`` directory, 
+The installation should have placed the executable "ViewCube" file in your ``$PATH`` directory, 
 making it accesible form any path.
 
 You can check the actual location of the scrip via:
 
-``which ViewCube.py``
+``which ViewCube``
 
 ^^^^^^^^^^^
 Config file
 ^^^^^^^^^^^
 
-The default installation places a hidden file named ".viewcuberc" at the user's local $HOME directory, 
-tipically located at:
+For `ViewCube` to function, it requires a configuration file. The program searches for the file in the following order:
 
-``$HOME/.viewcuberc``
+1. **Home Directory**:  
+   A hidden file named `.viewcuberc` in the user's home directory:  
 
-Uncomment the relevant variable and assign it the desired parameter value.
+   ``$HOME/.viewcuberc``
 
-If the file has not been created, you can generate a default configuration file by running:
+2. **Current Directory**:  
+   A non-hidden file named `viewcuberc` in the directory where `ViewCube` is executed.
 
-``ViewCube.py --config-file``
+If both files are found, the non-hidden file in the current directory takes precedence over the hidden file in the home directory.
 
-This will create the configuration file (not hidden) in your current directory.
+"""""""""""""""""""""""""""""""
+Generating a Configuration File
+"""""""""""""""""""""""""""""""  
 
-``ViewCube`` will attempt to read a configuration file from either ``$HOME/.viewcuberc`` or
-the current directory (a non-hidden ``viewcuberc`` file, withoug ``.`` at the beginning).
+If no configuration file exists or if you wish to create a new one, you can generate a default file by running:  
 
+``ViewCube --config-file``
+
+- **If `$HOME/.viewcuberc` does not exist**:  
+  The command will create a hidden `.viewcuberc` file in your home directory.  
+- **If `$HOME/.viewcuberc` exists**:  
+  The command will instead create a non-hidden `viewcuberc` file in the current directory.  
+
+Once generated, uncomment the relevant variables in the file and set them to your desired values.
 
 
 ^^^^^^^^^^^^^^^^^^^^^^^^

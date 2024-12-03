@@ -14,6 +14,7 @@ VERSION = "0.0.7"                                                          #
 """
  Author: Ruben Garcia-Benito (RGB)
  """
+import viewcube.version as version
 import viewcube.config as vc
 import matplotlib.rcsetup
 import matplotlib
@@ -66,6 +67,7 @@ def main():
     parser.add_argument(
         "-y", type=str, help="Plot style, separated by comma: 'dark_background, seaborn-ticks'"
     )
+    parser.add_argument("-v", help="Print version", action="store_true")
     parser.add_argument("-w", help="HDU number extension for the wavelength array")
     parser.add_argument(
         "--config-file", action="store_true", dest="configFile", help="Write config file"
@@ -80,6 +82,11 @@ def main():
             cfgfile = vc.configfile
         vc.WriteConfigFile(filerc=cfgfile)
         sys.exit()
+
+    # Print version
+    if args.v:
+        print ('ViewCube version: %s' % version.__version__)
+        sys.exit()
     
     # Exception arguments
     if args.name is None or len(args.name) < 1:
@@ -92,7 +99,7 @@ def main():
         sys.exit()
     else:
         matplotlib.use(args.b)
-    
+
     # Multiplicative factor
     fc = float(eval(args.fc))
     fo = float(eval(args.fo))
