@@ -43,9 +43,9 @@ To visualize a datacube, follow these steps:
     ```
 
 The first time you run ``ViewCube`` you may need to create a configuration file:
-    ```
-    ViewCube --config-file
-    ```
+```
+ViewCube --config-file
+```
 
 
 ## Cheat Sheet
