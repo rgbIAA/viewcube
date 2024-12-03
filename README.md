@@ -21,6 +21,7 @@ We recommend referring to the ViewCube documentation for comprehensive guidance:
 [https://viewcube.readthedocs.io](https://viewcube.readthedocs.io/)
 
 To get started quickly, just run:
+
     ```
     pip install viewcube
     ```
@@ -43,6 +44,7 @@ To visualize a datacube, follow these steps:
     ```
 
 The first time you run ``ViewCube`` you may need to create a configuration file:
+
     ```
     ViewCube --config-file
     ```
