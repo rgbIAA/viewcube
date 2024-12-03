@@ -21,7 +21,6 @@ We recommend referring to the ViewCube documentation for comprehensive guidance:
 [https://viewcube.readthedocs.io](https://viewcube.readthedocs.io/)
 
 To get started quickly, just run:
-
     ```
     pip install viewcube
     ```
@@ -39,13 +38,11 @@ To visualize a datacube, follow these steps:
 1. Open a terminal window.
 2. Navigate to the folder where your datacube file (`name_cube.fits`) is located.
 3. Enter the following command:
-
     ```
     ViewCube name_cube.fits
     ```
 
 The first time you run ``ViewCube`` you may need to create a configuration file:
-
     ```
     ViewCube --config-file
     ```
