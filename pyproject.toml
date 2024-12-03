@@ -34,7 +34,7 @@ sonicube = [
 ]
 
 [tool.setuptools]
-packages = { find = { include = ["viewcube*"], exclude = ["latex*", "sonicube*", "docs*", "scripts*"] } }
+packages = { find = { include = ["viewcube*"], exclude = ["latex*", "sonicube*", "docs*"] } }
 
 [project.scripts]
 ViewCube = "viewcube.main:main"  # This allows using 'viewcube' as a CLI command
