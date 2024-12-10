@@ -25,6 +25,8 @@ To get started quickly, just run:
 pip install viewcube
 ```
 
+For more information, visit the [ViewCube PyPI page](https://pypi.org/project/ViewCube/).
+
 ## Documentation
 
 For detailed instructions and information, consult the ViewCube documentation:
@@ -56,3 +58,11 @@ shortcuts and quick operations to enhance your experience.
 
 Start exploring your datacubes with ViewCube and gain valuable insights effortlessly. For any further assistance or feedback, please refer to the documentation or reach out to our support team. Happy visualizing!
 
+## How to cite this package
+
+If you use this package in your research—whether for visualization, sonification, or both—please 
+cite it by including as much of the following information as possible:
+
+Adrián García Riber, Rubén García-Benito, Francisco Serradilla. *Interactive multimodal integral 
+field spectroscopy*, RAS Techniques and Instruments, Volume 3, Issue 1, January 2024, Pages 748-758
+[https://doi.org/10.1093/rasti/rzae049](https://doi.org/10.1093/rasti/rzae049)

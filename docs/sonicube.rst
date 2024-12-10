@@ -18,8 +18,8 @@ specific sonification methods, much like how a color palette reveals visual deta
 A comprehensive description of the sonification module, along with its evaluation, is available 
 in the following paper:
 
-Adrián García Riber, Rubén García-Benito, Francisco Serradilla. *Interactive multimodal Integral 
-Field Spectroscopy*, RAS Techniques and Instruments, 2024, 
+Adrián García Riber, Rubén García-Benito, Francisco Serradilla. *Interactive multimodal integral 
+field spectroscopy*, RAS Techniques and Instruments, Volume 3, Issue 1, January 2024, Pages 748-758
 `https://doi.org/10.1093/rasti/rzae049 <https://doi.org/10.1093/rasti/rzae049>`_ 
 
 
