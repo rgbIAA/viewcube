@@ -28,7 +28,7 @@ dependencies = [
 sonicube = [
     "hashlib",
     "tensorflow",
-    "pythonosc",
+    "python-osc",
     "ctcsound",
     "librosa",
 ]
