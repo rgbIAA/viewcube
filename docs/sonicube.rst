@@ -45,7 +45,7 @@ processing. You can download the version for your operating system from the offi
 
    hashlib
    tensorflow
-   pythonosc
+   python-osc
    ctcsound
    librosa
 
