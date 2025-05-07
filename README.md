@@ -8,6 +8,24 @@
   </a>
 </p>
 
+<!-- Badges -->
+<p align="center"> 
+   <!-- Latest Viewcube version updated to PyPI -->
+  <a href="https://pypi.org/project/ViewCube/">
+      <img src="https://badgen.net/pypi/v/viewcube">
+  </a>
+
+   <!-- Python version required -->
+  <a href="https://pypi.org/project/ViewCube/">
+      <img src="https://badgen.net/pypi/python/viewcube">
+  </a>
+
+   <!-- PyPI license -->
+  <a href="https://pypi.org/project/ViewCube/">
+      <img src="https://badgen.net/pypi/license/viewcube">
+  </a>
+</p>
+
 <br />
 <p align="center">
   <a href="#documentation"><b>Documentation</b></a> •
