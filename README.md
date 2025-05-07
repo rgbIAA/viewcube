@@ -8,6 +8,15 @@
   </a>
 </p>
 
+<br />
+<p align="center">
+  <a href="#documentation"><b>Documentation</b></a> •
+  <a href="#installation"><b>Installation</b></a> •
+  <a href="#usage"><b>Usage</b></a> •
+  <a href="https://pypi.org/project/ViewCube/"><b>PyPI Repository</b></a>
+</p>
+<br />
+
 ---
 
 # ViewCube - Datacube Visualization [& Sonification] Tool
