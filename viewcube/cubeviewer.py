@@ -16,7 +16,7 @@ from .utils import lsfiles, ckfiles, LoadFits, image_max_pixel
 from .utils import save_spec, convert2iraf_spec, get_min_max
 from matplotlib.widgets import RectangleSelector
 from matplotlib.patches import Circle, Rectangle
-from distutils.version import LooseVersion
+from setuptools._distutils.version import LooseVersion
 import astropy.io.fits as pyfits
 from matplotlib import rcParams
 from astropy import units as u
