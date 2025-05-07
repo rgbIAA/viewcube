@@ -1,3 +1,15 @@
+<p align="center">
+  <br />
+  <br />
+  <a href="https://www.iaa.es/">
+    <img
+      src="https://www.iaa.csic.es/sites/default/files/banners/news/banner_web_iaa_57.png"
+      alt="ViewCube" width="400">
+  </a>
+</p>
+
+---
+
 # ViewCube - Datacube Visualization [& Sonification] Tool
 
 **ViewCube** is a user-friendly datacube visualizer designed to streamline the exploration and 
