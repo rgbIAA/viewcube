@@ -4,7 +4,7 @@
   <a href="https://www.iaa.es/">
     <img
       src="https://www.iaa.csic.es/sites/default/files/banners/news/banner_web_iaa_57.png"
-      alt="ViewCube" width="400">
+      alt="ViewCube">
   </a>
 </p>
 
