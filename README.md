@@ -24,6 +24,11 @@
   <a href="https://pypi.org/project/ViewCube/">
       <img src="https://badgen.net/pypi/license/viewcube">
   </a>
+
+  <!-- Code style -->
+  <a href="https://styles.goatbytes.io/lang/python/">
+      <img src="https://img.shields.io/badge/Style%20Guide-Python-3776AB.svg?style=flat&labelColor=black&color=3776AB&logo=python">
+  </a>
 </p>
 
 <br />
