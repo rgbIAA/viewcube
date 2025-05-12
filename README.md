@@ -1,3 +1,47 @@
+<p align="center">
+  <br />
+  <br />
+  <a href="https://www.iaa.es/">
+    <img
+      src="https://www.iaa.csic.es/sites/default/files/banners/news/banner_web_iaa_57.png"
+      alt="ViewCube">
+  </a>
+</p>
+
+<!-- Badges -->
+<p align="center"> 
+   <!-- Latest Viewcube version updated to PyPI -->
+  <a href="https://pypi.org/project/ViewCube/">
+      <img src="https://badgen.net/pypi/v/viewcube">
+  </a>
+
+   <!-- Python version required -->
+  <a href="https://pypi.org/project/ViewCube/">
+      <img src="https://badgen.net/pypi/python/viewcube">
+  </a>
+
+   <!-- PyPI license -->
+  <a href="https://pypi.org/project/ViewCube/">
+      <img src="https://badgen.net/pypi/license/viewcube">
+  </a>
+
+  <!-- Code style -->
+  <a href="https://styles.goatbytes.io/lang/python/">
+      <img src="https://img.shields.io/badge/Style%20Guide-Python-3776AB.svg?style=flat&labelColor=black&color=3776AB&logo=python">
+  </a>
+</p>
+
+<br />
+<p align="center">
+  <a href="#documentation"><b>Documentation</b></a> •
+  <a href="#installation"><b>Installation</b></a> •
+  <a href="#usage"><b>Usage</b></a> •
+  <a href="https://pypi.org/project/ViewCube/"><b>PyPI Repository</b></a>
+</p>
+<br />
+
+---
+
 # ViewCube - Datacube Visualization [& Sonification] Tool
 
 **ViewCube** is a user-friendly datacube visualizer designed to streamline the exploration and 
