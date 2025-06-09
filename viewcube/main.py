@@ -129,7 +129,7 @@ def main():
         plt.style.use(styles)
     
     if args.p is None:
-        from viewcube.cubeviewer import CubeViewer
+        from viewcube.cubeviewer_old import CubeViewer
     
         lkey = ["angle", "skycoord"]
         for key in lkey:
