@@ -15,8 +15,8 @@ import sys
 
 # Third-party imports
 import matplotlib
-import matplotlib.rcsetup
 import matplotlib.pyplot as plt
+import matplotlib.rcsetup
 
 # Local imports
 from viewcube import config as vc
