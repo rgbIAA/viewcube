@@ -15,7 +15,7 @@ VERSION = "0.1.5"                                                          #
  Author: Ruben Garcia-Benito (RGB)
  """
 from .utils import ofits, LoadFits, lsfiles, ckfiles, save_spec, get_min_max, convert2iraf_spec
-from .cubeviewer import GetSpaxelLimits, GetLambdaLimits, GetIdFilter, GetFluxLimits
+from .cubeviewer_old import GetSpaxelLimits, GetLambdaLimits, GetIdFilter, GetFluxLimits
 from matplotlib.collections import PatchCollection, PolyCollection
 from matplotlib.patches import Circle, Rectangle, Polygon
 from matplotlib.widgets import RectangleSelector
