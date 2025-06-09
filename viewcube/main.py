@@ -1,176 +1,225 @@
+"""Módulo principal de ViewCube para visualización de datos astronómicos."""
 ############################################################################
 #                            VIEW-CUBE/RSS                                 #
 #                               PYTHON 3                                   #
 #                                                                          #
 # RGB@IAA ---> Last Change: 2024/11/30                                     #
 ############################################################################
-#
-#
-#
-################################ VERSION ###################################
-VERSION = "0.0.7"                                                          #
-############################################################################
-#
+
 """
  Author: Ruben Garcia-Benito (RGB)
- """
-import viewcube.version as version
-import viewcube.config as vc
-import matplotlib.rcsetup
-import matplotlib
+"""
 import argparse
-import sys
 import os
+import sys
 
-def main():
+# Third-party imports
+import matplotlib
+import matplotlib.rcsetup
+import matplotlib.pyplot as plt
 
-    # List of matplotlib backends
+# Local imports
+from viewcube import config as vc
+from viewcube import version
+from viewcube.cubeviewer_old import CubeViewer
+from viewcube.viewrss import RSSViewer
+
+VERSION = "0.0.7"
+
+
+def parse_arguments() -> argparse.Namespace:
+    """Configura y analiza los argumentos de línea de comandos."""
     list_backends = matplotlib.rcsetup.interactive_bk
     slist_backends = " | ".join(list_backends)
 
-    # Parse options
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )  # --> Escribir defaults en help
+    )
+
+    # Argumentos principales
+    parser.add_argument("name", type=str, help="FITS file", nargs="*")
+
+    # Configuración de visualización
+    parser.add_argument(
+        "-b",
+        type=str,
+        help=f"Matplotlib backend. Available: {slist_backends}",
+        default=matplotlib.rcParams["backend"]
+    )
+    parser.add_argument(
+        "-y",
+        type=str,
+        help="Plot style (comma-separated): 'dark_background,seaborn-ticks'"
+    )
+
+    # Parámetros de procesamiento
     parser.add_argument("--data", type=int, help="DATA extension")
     parser.add_argument("--error", type=int, help="ERROR extension")
     parser.add_argument("--flag", type=int, help="FLAG/MASK extension")
     parser.add_argument("--header", type=int, default=0, help="HEADER extension")
-    parser.add_argument("-a", type=float, help="Angle to rotate the position table (only RSS)")
     parser.add_argument(
-        "-b",
-        type=str,
-        help="Matplotlib backend. Use 'TkAgg' if using PyRAF for interactive fitting. Available backends: %s"
-        % slist_backends,
-        default=matplotlib.rcParams["backend"],
+        "-a",
+        type=float,
+        help="Angle to rotate position table (RSS only)"
     )
-    parser.add_argument("-c", type=str, help="FITS file for comparison")
+    parser.add_argument(
+        "-p",
+        type=str,
+        help="External position table for RSS Viewer"
+    )
+    parser.add_argument("-s", type=int, help="Spectral dimension")
+
+    # Opciones de comportamiento
+    parser.add_argument("-v", help="Print version", action="store_true")
+    parser.add_argument(
+        "--config-file",
+        action="store_true",
+        dest="configFile",
+        help="Write config file"
+    )
+    parser.add_argument(
+        "--fc",
+        type=str,
+        default="1.0",
+        help="Multiplicative factor for comparison file"
+    )
+    parser.add_argument(
+        "--fo",
+        type=str,
+        default="1.0",
+        help="Multiplicative factor for original file"
+    )
+    parser.add_argument(
+        "-i",
+        action="store_true",
+        help="Conversion from IVAR to error"
+    )
+    parser.add_argument(
+        "-k",
+        action="store_false",
+        help="Use X,Y instead of sky coords for computing fiber distance"
+    )
+    parser.add_argument(
+        "-m",
+        action="store_false",
+        help="Do NOT use masked arrays for flagged values"
+    )
     parser.add_argument(
         "-e",
         action="store_true",
-        help="Position table is in RSS and -p indicates the extension (string or int)",
+        help="Position table is in RSS and -p indicates the extension"
     )
-    parser.add_argument(
-        "-f", action="store_false", help="Do NOT apply sensitivity curve (if HDU is available)"
-    )
-    parser.add_argument("-fo", type=str, default="1.0", help="Multiplicative factor for original file")
-    parser.add_argument(
-        "-fc", type=str, default="1.0", help="Multiplicative factor for comparison file"
-    )
-    parser.add_argument("-i", action="store_true", help="Conversion from IVAR to error")
-    parser.add_argument(
-        "-k", action="store_false", help="Use X,Y instead of sky coords for computing fiber distance"
-    )
-    parser.add_argument("-m", action="store_false", help="Do NOT use masked arrays for flagged values")
-    parser.add_argument("-p", type=str, help="External position table for RSS Viewer")
-    parser.add_argument("-s", type=int, help="Spectral dimension")
-    parser.add_argument(
-        "-y", type=str, help="Plot style, separated by comma: 'dark_background, seaborn-ticks'"
-    )
-    parser.add_argument("-v", help="Print version", action="store_true")
     parser.add_argument("-w", help="HDU number extension for the wavelength array")
-    parser.add_argument(
-        "--config-file", action="store_true", dest="configFile", help="Write config file"
-    )
-    parser.add_argument("name", type=str, help="FITS file", nargs="*")
-    args = parser.parse_args()
-    
-    # Config File
+    parser.add_argument("-c", type=str, help="FITS file for comparison")
+
+    return parser.parse_args()
+
+
+def configure_backend(backend: str, available_backends: list) -> None:
+    """Configura el backend de Matplotlib."""
+    if backend not in available_backends:
+        print(f'*** Backend "{backend}" NOT available ***')
+        print(f">>> Available backends: {' | '.join(available_backends)}")
+        sys.exit(1)
+    matplotlib.use(backend)
+
+
+def handle_config_and_version(args: argparse.Namespace) -> None:
+    """Maneja las opciones de configuración y versión."""
     if args.configFile:
-        cfgfile = vc.viewcuberc
-        if not os.path.exists(vc.configfile):
-            cfgfile = vc.configfile
+        cfgfile = vc.viewcuberc if not os.path.exists(vc.configfile) else vc.configfile
         vc.WriteConfigFile(filerc=cfgfile)
         sys.exit()
 
-    # Print version
     if args.v:
-        print ('ViewCube version: %s' % version.__version__)
+        print(f'ViewCube version: {version.__version__}')
         sys.exit()
-    
-    # Exception arguments
-    if args.name is None or len(args.name) < 1:
-        sys.exit(parser.print_usage())
-    
-    # Matplotlib Backend
-    if args.b not in list_backends:
-        print('*** Backend "%s" NOT available ***' % args.b)
-        print(">>> Available backends: %s" % slist_backends)
-        sys.exit()
-    else:
-        matplotlib.use(args.b)
 
-    # Multiplicative factor
-    fc = float(eval(args.fc))
-    fo = float(eval(args.fo))
-    
-    # Read Config File
-    vc.GetConfig(vc.defaultDictParams)
-    if args.w != None:
+
+def update_config_from_args(args: argparse.Namespace) -> None:
+    """Actualiza el diccionario de configuración global desde los argumentos."""
+    config_mappings = {
+        "specaxis": args.s,
+        "exdata": args.data,
+        "exerror": args.error,
+        "exflag": args.flag,
+        "exhdr": args.header,
+        "masked": args.m,
+        "skycoord": args.k,
+        "sensf": args.f
+    }
+
+    for key, value in config_mappings.items():
+        if value is not None:
+            vc.defaultDictParams[key] = value
+
+    if args.w is not None:
         try:
             vc.defaultDictParams["exwave"] = int(args.w)
-        except:
+        except ValueError as e:
+            print(f"Error converting wavelength extension: {e}")
             vc.defaultDictParams["exwave"] = args.w
-    
-    # LoadFits options
-    vc.defaultDictParams["specaxis"] = args.s
-    vc.defaultDictParams["exdata"] = args.data
-    vc.defaultDictParams["exerror"] = args.error
-    vc.defaultDictParams["exflag"] = args.flag
-    vc.defaultDictParams["exhdr"] = args.header
-    vc.defaultDictParams["masked"] = args.m
-    vc.defaultDictParams["skycoord"] = args.k
-    vc.defaultDictParams["sensf"] = args.f
-    
-    if args.y is not None:
-        import matplotlib.pyplot as plt
-    
-        styles = args.y.split(",")
-        plt.style.use(styles)
-    
+
+
+def setup_viewer(args: argparse.Namespace, config_params: dict):
+    """Configura y devuelve el visor apropiado según los argumentos."""
+    fc = float(args.fc) if args.fc else 1.0
+    fo = float(args.fo) if args.fo else 1.0
+
     if args.p is None:
-        from viewcube.cubeviewer_old import CubeViewer
-    
-        lkey = ["angle", "skycoord"]
-        for key in lkey:
-            if key in vc.defaultDictParams:
-                del vc.defaultDictParams[key]
-        CV = CubeViewer(args.name[0], fitscom=args.c, fc=fc, fo=fo, ivar=args.i, **vc.defaultDictParams)
-    
-    else:
-        from viewcube.viewrss import RSSViewer
-    
-        lkey = [
-            "exdata",
-            "exwave",
-            "exhdr",
-            "specaxis",
-            "exerror",
-            "exflag",
-            "c",
-            "mval",
-            "cflag",
-            "lflag",
-            "lcom",
-            "ccom",
-            "lspec",
-            "cspec",
-            "dsoni",
-            "ref_mode",
-            "soni_start",
-        ]
-        for key in lkey:
-            if key in vc.defaultDictParams:
-                del vc.defaultDictParams[key]
-        if args.a is not None:
-            vc.defaultDictParams["angle"] = args.a
-        CV = RSSViewer(
+        config_params.pop("angle", None)
+        config_params.pop("skycoord", None)
+        return CubeViewer(
             args.name[0],
-            args.p,
             fitscom=args.c,
             fc=fc,
             fo=fo,
             ivar=args.i,
-            extension=args.e,
-            **vc.defaultDictParams
+            **config_params
         )
+
+    excluded_keys = [
+        "exdata", "exwave", "exhdr", "specaxis", "exerror", "exflag",
+        "c", "mval", "cflag", "lflag", "lcom", "ccom", "lspec", "cspec",
+        "dsoni", "ref_mode", "soni_start"
+    ]
+
+    for key in excluded_keys:
+        config_params.pop(key, None)
+
+    if args.a is not None:
+        config_params["angle"] = args.a
+
+    return RSSViewer(
+        args.name[0],
+        args.p,
+        fitscom=args.c,
+        fc=fc,
+        fo=fo,
+        ivar=args.i,
+        extension=args.e,
+        **config_params
+    )
+
+
+def main() -> None:
+    """Función principal de ejecución de ViewCube."""
+    args = parse_arguments()
+
+    if not args.name:
+        sys.exit("Error: Se requiere al menos un archivo FITS como argumento")
+
+    handle_config_and_version(args)
+    configure_backend(args.b, matplotlib.rcsetup.interactive_bk)
+
+    if args.y:
+        plt.style.use(args.y.split(','))
+
+    vc.GetConfig(vc.defaultDictParams)
+    update_config_from_args(args)
+    viewer = setup_viewer(args, vc.defaultDictParams.copy())
+    viewer.run()
+
+
+if __name__ == "__main__":
+    main()
