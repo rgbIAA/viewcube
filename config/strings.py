@@ -1,0 +1,1 @@
+"""Text configurations for GUI"""
