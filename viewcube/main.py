@@ -13,12 +13,10 @@ import argparse
 import os
 import sys
 
-# Third-party imports
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.rcsetup
 
-# Local imports
 from viewcube import config as vc
 from viewcube import version
 from viewcube.cubeviewer_old import CubeViewer
