@@ -9,9 +9,9 @@
 #
 # ---------------------------------------------------------------------------
 #
-# Version 1.2.4
+# Version 1.2.5
 # Ruben Garcia Benito (RGB) - UAM/KIAA-PKU 2011
-# PYTHON 3: 2024/10/10
+# PYTHON 3: 2025/10/16
 #
 # Scaling functions written by Min-Su Shin (ILOG IRAF opcion by RGB)
 # Department of Astrophysical Sciences, Princeton University
@@ -690,11 +690,10 @@ class ColorMapList(object):
     """
 
     def __init__(self):
-        from pylab import cm
-
+        
         # A list with available Matplotlib color maps
         # The '_r' entries are reversed versions
-        self.colormaps = sorted([m for m in cm.datad.keys() if not m.endswith("_r")])
+        self.colormaps = sorted([m for m in plt.colormaps() if not m.endswith("_r")])
 
     def add(self, clist):
         if not issequence(clist):
