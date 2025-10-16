@@ -153,7 +153,7 @@ def GetConfig(dictParams, filerc=viewcuberc):
             print('*** Run "ViewCube --config-file" to create one! ***')
             sys.exit()
     confp = ConfigParser.ConfigParser()
-    confp.readfp((open(rcname)))
+    confp.read_file((open(rcname)))
     # if len(confp.items('QBICK')) == 0:
     # print '*** QBICK configuration file "%s" EMPTY!! Set default variables!! ***' % filerc
     def_pars = get_func_default_parameters(LoadFits, remove="name")
