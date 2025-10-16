@@ -767,35 +767,12 @@ class CubeViewer:
             self.RS.set_active(True)
 
     def PressKey(self, event):
-        if event.key == "*":
+        if event.key == "*" and len(self.list) > 0:
             self.ax2.cla()
             self.ax.cla()
-            norm = rnorm(self.norm) if self.icmp.scale is None else rnorm(self.icmp.scale)
-            ne = self.p.get_clim()
-            idc = self.icmp.cmindx
-            self.p = self.ax.imshow(
-                self.color,
-                alpha=self.palpha,
-                extent=self.ext,
-                cmap=self.p.get_cmap(),
-                norm=norm,
-                interpolation="nearest",
-                origin="lower",
-                aspect="auto",
-            )
-            self.p.set_clim(ne)
-            # self.ax = self.fig.add_subplot(111,frameon=False,xticks=[],yticks=[])
-            # plt.setp(self.axp.get_yticklabels(),visible=False)
-            # plt.setp(self.axp.get_xticklabels(),visible=False)
-            # self.ax.axis([0,self.xx,0,self.yy])
-            self.ax.axis(self.ext)
-            self.ax.set_title(self.bname_fits)
-            if self.iclm:
-                self.icmp = IntColorMap(self.p)
-                self.icmp.cmindx = idc
+            self.updateAx1()
             self.list = []
             self.pbline = None
-            self.fig.canvas.draw()
             self.fig2.canvas.draw()
         if event.key == "s":
             self.mode = not self.mode
@@ -1544,6 +1521,7 @@ class CubeViewer:
     def updateAx1(self, color=True):
         self.fig.clf()
         self.ax = self.fig.add_subplot(111)
+        self.ax.set_title(self.bname_fits)
         norm = rnorm(self.norm) if self.icmp.scale is None else rnorm(self.icmp.scale)
         if color:
             self.set_fff(verb=False, dl=self.gdl)
